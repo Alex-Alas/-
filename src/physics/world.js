@@ -19,6 +19,7 @@ import { colliders, BOUNDS } from './statics.js';
 import { RigidBody, SHAPE } from './rigidbody.js';
 import { collidePair, groundContacts, resetContacts } from './collide.js';
 import { FL, addSolid } from './fluid.js';
+import { solveJoints, removeJointsOf } from './joints.js';
 
 export const bodies = [];
 export const contacts = [];
@@ -52,6 +53,7 @@ export function removeBody(body) {
   if (i < 0) return;
   bodies.splice(i, 1);
   body.removed = true;
+  removeJointsOf(body);
   if (body.mesh && body.mesh.parent) body.mesh.parent.remove(body.mesh);
   events.emit('body:removed', body);
 }
@@ -317,6 +319,8 @@ export function stepRigid(dt) {
     if (it & 1) for (let i = contacts.length - 1; i >= 0; i--) solve(contacts[i], dt);
     else for (let i = 0; i < contacts.length; i++) solve(contacts[i], dt);
   }
+  solveJoints(dt);
+
   for (let it = 0; it < solverConfig.posIterations; it++) {
     if (it & 1) for (let i = contacts.length - 1; i >= 0; i--) solvePosition(contacts[i], dt);
     else for (let i = 0; i < contacts.length; i++) solvePosition(contacts[i], dt);

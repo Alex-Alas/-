@@ -636,3 +636,19 @@ export function updateFinger(dt) {
   }
   finger.px = finger.x; finger.py = finger.y; finger.pz = finger.z;
 }
+
+/* A blast wave reaches the puddle too: velocities are kicked radially
+   (positions are left alone, so the solver stays stable). */
+export function blastFluid(px, py, pz, power, radius) {
+  const r2 = radius * radius;
+  for (let i = 0; i < FL.n; i++) {
+    const dx = fpX[i] - px, dy = fpY[i] - py, dz = fpZ[i] - pz;
+    const d2 = dx * dx + dy * dy + dz * dz;
+    if (d2 > r2) continue;
+    const d = Math.sqrt(d2) + 0.5;
+    const k = Math.min(FL.maxSpeed, power / (d * d) * 0.35) / d;
+    fvX[i] += dx * k;
+    fvY[i] += dy * k + 0.8;
+    fvZ[i] += dz * k;
+  }
+}

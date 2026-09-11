@@ -9,6 +9,7 @@ import { updateWind } from './sim.js';
 import { stepRigid, pushBodySolids, collideParticleWithBodies } from './world.js';
 import { FL, fluidStep, clearSolids } from './fluid.js';
 import { stepPlayer } from '../entities/player.js';
+import { updateAttachments } from '../entities/attachments.js';
 import { stepBuddy, matDef, buddy, particles } from '../entities/buddy/index.js';
 
 export const FIXED_DT = 1 / 60;
@@ -19,6 +20,7 @@ export function stepWorld(dt) {
   updateWind(dt);
   clearSolids();            // obstacle list for the fluid, rebuilt by its owners
 
+  updateAttachments(dt);      // thrusters and balloons push before the solve
   stepRigid(dt);
   stepPlayer(dt);
   stepBuddy(dt);
