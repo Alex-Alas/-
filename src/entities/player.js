@@ -51,6 +51,8 @@ export const player = {
   eyeHeight: PLAYER.eye,
   bob: 0,
   enabled: false,
+  coyoteTimer: 0,
+  jumpBufferTimer: 0,
   /* Written every frame by whoever is driving: keyboard, a cutscene, a
      future bot. The controller itself never reads the keyboard. */
   intent: { forward: 0, strafe: 0, jump: false, run: false, crouch: false },
@@ -149,8 +151,9 @@ const _offsets = [0, 0, 0];
 function capsuleOffsets() {
   const r = PLAYER.radius;
   const h = player.height;
-  _offsets[0] = r + 0.02;
-  _offsets[1] = h * 0.5;
+  const tuck = (!player.onGround && player.crouching) ? (PLAYER.height - PLAYER.crouchHeight) : 0;
+  _offsets[0] = r + 0.02 + tuck;
+  _offsets[1] = h * 0.5 + tuck * 0.5;
   _offsets[2] = h - r - 0.02;
   return _offsets;
 }
@@ -318,16 +321,41 @@ export function stepPlayer(dt) {
   if (player.crouching) speed = PLAYER.crouch;
   const wishSpeed = wishLen > 1e-4 ? speed : 0;
 
+  // manage jump buffer timer (100ms window)
+  if (player.intent.jump) {
+    player.jumpBufferTimer = 0.10;
+  } else if (player.jumpBufferTimer > 0) {
+    player.jumpBufferTimer -= dt;
+  }
+
+  // manage coyote timer (120ms window)
+  if (player.onGround) {
+    player.coyoteTimer = 0.12;
+  } else if (player.coyoteTimer > 0) {
+    player.coyoteTimer -= dt;
+  }
+
+  const wantsJump = player.jumpBufferTimer > 0;
+  const canJump = player.onGround || player.coyoteTimer > 0;
+
   if (player.onGround) {
     applyFriction(dt);
     accelerate(_wish, wishSpeed, PLAYER.accel, dt);
-    if (player.intent.jump) {
+    if (wantsJump && canJump) {
       player.vel.y = PLAYER.jump;
       player.onGround = false;
+      player.coyoteTimer = 0;
+      player.jumpBufferTimer = 0;
       events.emit('player:jump');
     }
   } else {
     accelerate(_wish, Math.min(wishSpeed, PLAYER.run), PLAYER.airAccel, dt);
+    if (wantsJump && canJump) {
+      player.vel.y = PLAYER.jump;
+      player.coyoteTimer = 0;
+      player.jumpBufferTimer = 0;
+      events.emit('player:jump');
+    }
   }
 
   player.vel.y += gravityFor(1) * dt;
