@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ragdoll Buddy</title>
+<title>Ragdoll Buddy — Cinematic Reel</title>
 <style>
   * { box-sizing: border-box; }
   html, body {
@@ -24,37 +24,143 @@
     cursor: grab;
   }
   canvas.grabbing { cursor: grabbing; }
+
   #title {
-    position: fixed; top: 12px; left: 0; right: 0; text-align: center;
-    color: #5b4d8a; font-size: 11px; letter-spacing: 3px;
-    text-transform: uppercase; pointer-events: none;
+    position: fixed; top: 10px; left: 0; right: 0; text-align: center;
+    color: #5b4d8a; font-size: 10px; letter-spacing: 3px;
+    text-transform: uppercase; pointer-events: none; line-height: 1.6;
+    transition: opacity .4s;
   }
   #title b { color: #b9a3ff; }
-  #hud {
-    position: fixed; left: 0; right: 0; bottom: 14px;
-    display: flex; justify-content: center; gap: 8px;
+  #title span { color: #3d3460; }
+  #title.hidden { opacity: 0; }
+
+  #ui {
+    position: fixed; left: 0; right: 0; bottom: 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
     pointer-events: none;
+    transition: opacity .4s, transform .4s;
   }
+  #ui.hidden { opacity: 0; transform: translateY(20px); pointer-events: none; }
+  .row { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; max-width: 96vw; }
+
   button {
     pointer-events: auto;
-    font-family: inherit; font-size: 11px; letter-spacing: 2px;
+    font-family: inherit; font-size: 10px; letter-spacing: 1.5px;
     text-transform: uppercase; color: #c8ffe6;
     background: #1d1733; border: 2px solid #4d3f7a;
-    padding: 8px 16px; cursor: pointer;
-    box-shadow: 3px 3px 0 #0d0a17;
-    transition: background .08s;
+    padding: 6px 10px; cursor: pointer;
+    box-shadow: 2px 2px 0 #0d0a17;
+    transition: background .08s, color .08s;
+    white-space: nowrap;
   }
   button:hover { background: #2a2148; color: #fff; }
-  button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #0d0a17; }
+  button:active { transform: translate(2px, 2px); box-shadow: 0 0 0 #0d0a17; }
+  button.on {
+    background: #4d3f7a; color: #fff; border-color: #b9a3ff;
+    box-shadow: 0 0 0 #0d0a17, 0 0 10px rgba(185,163,255,.45);
+  }
+  button i {
+    display: inline-block; width: 7px; height: 7px;
+    margin-right: 5px; vertical-align: middle;
+    border: 1px solid rgba(0,0,0,.5);
+  }
+
+  #cine {
+    position: fixed; inset: 0; pointer-events: none;
+    opacity: 0; transition: opacity .45s ease;
+    z-index: 20;
+  }
+  #cine.on { opacity: 1; }
+  #cine .bar {
+    position: absolute; left: 0; right: 0; height: 11%;
+    background: #05030a;
+    transition: transform .65s cubic-bezier(.2,.85,.2,1);
+  }
+  #cine .bar.top { top: 0; transform: translateY(-101%); }
+  #cine .bar.bot { bottom: 0; transform: translateY(101%); }
+  #cine.on .bar.top { transform: translateY(0); }
+  #cine.on .bar.bot { transform: translateY(0); }
+
+  #cineTitle {
+    position: absolute; left: 0; right: 0; bottom: 13.5%;
+    text-align: center; pointer-events: none;
+    text-shadow: 0 2px 0 #000;
+  }
+  #cineTitle .n {
+    font-size: 13px; letter-spacing: 6px; color: #efe6ff;
+    text-transform: uppercase;
+  }
+  #cineTitle .s {
+    font-size: 9px; letter-spacing: 3px; color: #8a7fbe;
+    margin-top: 5px; text-transform: uppercase;
+  }
+
+  #cineSkip {
+    position: absolute; top: 2.2%; right: 2.2%;
+    pointer-events: auto; z-index: 22;
+    font-size: 9px; padding: 5px 10px;
+    background: #14102a; border-color: #6b58a8; color: #d9cfff;
+    box-shadow: 2px 2px 0 #000;
+  }
+  #cineSkip:hover { background: #2a2148; }
+
+  #cineBar {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 3px; background: rgba(255,255,255,.08);
+  }
+  #cineBarFill {
+    height: 100%; width: 0%;
+    background: #b9a3ff;
+    box-shadow: 0 0 8px rgba(185,163,255,.8);
+  }
+
+  /* ---------- SCREEN SAVER ---------- */
+  body.saver, body.saver canvas { cursor: none; }
+
+  #saverFade {
+    position: fixed; inset: 0; z-index: 30;
+    background: #05030a; opacity: 0;
+    pointer-events: none;
+  }
+
+  #saverTag {
+    position: fixed; left: 0; top: 0; z-index: 31;
+    pointer-events: none; opacity: 0;
+    transition: opacity .55s ease;
+    text-shadow: 0 2px 0 #000;
+    will-change: transform;
+  }
+  #saverTag.on { opacity: 1; }
+  #saverTag .n { font-size: 11px; letter-spacing: 5px; color: #e7dcff; text-transform: uppercase; }
+  #saverTag .s { font-size: 8px;  letter-spacing: 3px; color: #7a6dae; text-transform: uppercase; margin-top: 5px; }
+  #saverTag .w { font-size: 8px;  letter-spacing: 3px; color: #463d6d; text-transform: uppercase; margin-top: 12px; }
 </style>
 </head>
 <body>
 <div id="stage"><canvas id="c"></canvas></div>
-<div id="title">RAGDOLL BUDDY <b>v1.0</b> &nbsp;·&nbsp; drag him &nbsp;·&nbsp; drag the void to orbit</div>
-<div id="hud">
-  <button id="btnReset">Reset</button>
-  <button id="btnDrop">Drop</button>
-  <button id="btnSpin">Spin</button>
+<div id="title">
+  RAGDOLL BUDDY <b>v2.4</b> <span>·</span> MATERIAL LAB<br>
+  <span>drag him · drag the void to orbit · pick a material below</span>
+</div>
+<div id="ui">
+  <div class="row" id="matRow"></div>
+  <div class="row" id="toolRow"></div>
+</div>
+
+<div id="cine">
+  <div class="bar top"></div>
+  <div class="bar bot"></div>
+  <div id="cineTitle"><div class="n"></div><div class="s"></div></div>
+  <button id="cineSkip">▶▶ SKIP</button>
+  <div id="cineBar"><div id="cineBarFill"></div></div>
+</div>
+
+<div id="saverFade"></div>
+<div id="saverTag">
+  <div class="n"></div>
+  <div class="s"></div>
+  <div class="w">move · click · any key to wake</div>
 </div>
 
 <script type="importmap">
@@ -79,12 +185,11 @@ renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 renderer.setClearColor(0x1b1430, 1);
 
 const scene = new THREE.Scene();
-
 const FOG_COLOR = new THREE.Color(0x1b1430);
 
 const camera = new THREE.PerspectiveCamera(55, RES_W / RES_H, 0.3, 220);
-
 const camState = { theta: 0.38, phi: 1.18, radius: 10.5, target: new THREE.Vector3(0, 1.9, 0) };
+let shake = 0;
 
 function updateCamera() {
   const sp = Math.sin(camState.phi), cp = Math.cos(camState.phi);
@@ -93,28 +198,29 @@ function updateCamera() {
     camState.target.y + camState.radius * cp,
     camState.target.z + camState.radius * sp * Math.cos(camState.theta)
   );
+  if (shake > 0.001) {
+    camera.position.x += (Math.random() - 0.5) * shake * 0.9;
+    camera.position.y += (Math.random() - 0.5) * shake * 0.9;
+    camera.position.z += (Math.random() - 0.5) * shake * 0.9;
+  }
   camera.lookAt(camState.target);
   camera.updateMatrixWorld();
 }
-updateCamera();
 
 /* =========================================================
-   RETRO SHADER  (PS1 vertex snapping + banded shading + fog)
+   RETRO SHADER
    ========================================================= */
 const VERT = `
 uniform vec2 uSnap;
 varying vec3 vNormal;
 varying vec3 vViewPos;
 varying vec2 vUv;
-
 void main() {
   vUv = uv;
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   vViewPos = mvPosition.xyz;
   vNormal = normalize(mat3(modelMatrix) * normal);
-
   vec4 clip = projectionMatrix * mvPosition;
-  // --- PS1 style vertex snapping ---
   vec2 g = uSnap;
   vec2 ndc = clip.xy / clip.w;
   ndc = floor(ndc * g + 0.5) / g;
@@ -132,28 +238,19 @@ uniform float uFogNear;
 uniform float uFogFar;
 uniform vec3  uLightDir;
 uniform float uAlpha;
-
 varying vec3 vNormal;
 varying vec3 vViewPos;
 varying vec2 vUv;
-
 void main() {
   vec3 n = normalize(vNormal);
   float lambert = max(dot(n, normalize(uLightDir)), 0.0);
-
   vec3 base = uColor;
   if (uUseMap > 0.5) base *= texture2D(uMap, vUv).rgb;
-
   vec3 col = base * (0.60 + 0.65 * lambert);
-
-  // colour banding -> limited palette look
   col = floor(col * 24.0 + 0.5) / 24.0;
-
-  // distance fog
   float d = length(vViewPos);
   float f = clamp((d - uFogNear) / (uFogFar - uFogNear), 0.0, 1.0);
   col = mix(col, uFogColor, f);
-
   gl_FragColor = vec4(col, uAlpha);
 }
 `;
@@ -164,7 +261,7 @@ WHITE_TEX.needsUpdate = true;
 const shared = {
   uFogColor: { value: FOG_COLOR },
   uFogNear:  { value: 11.0 },
-  uFogFar:   { value: 38.0 },
+  uFogFar:   { value: 40.0 },
   uLightDir: { value: new THREE.Vector3(0.45, 0.92, 0.55).normalize() },
   uSnap:     { value: new THREE.Vector2(RES_W * 0.5, RES_H * 0.5) },
 };
@@ -189,7 +286,6 @@ function makeMaterial(color, opts = {}) {
   });
 }
 
-/* flat-shade helper: non-indexed + per-face normals */
 function flat(geo) {
   const g = geo.index ? geo.toNonIndexed() : geo;
   g.computeVertexNormals();
@@ -215,23 +311,23 @@ function makeCheckerTexture(c1, c2) {
 }
 
 const groundTex = makeCheckerTexture('#2c2447', '#241d3a');
-const groundGeo = flat(new THREE.PlaneGeometry(120, 120, 60, 60));
-const groundMat = makeMaterial(0xffffff, { map: groundTex });
-const ground = new THREE.Mesh(groundGeo, groundMat);
+const ground = new THREE.Mesh(
+  flat(new THREE.PlaneGeometry(120, 120, 60, 60)),
+  makeMaterial(0xffffff, { map: groundTex })
+);
 ground.rotation.x = -Math.PI / 2;
 scene.add(ground);
 
-/* --- obstacle boxes --- */
-const boxDefs = [
+const colliders = [];
+for (const b of [
   { p: [ 4.4, 0.45, -2.6], s: [2.2, 0.9, 2.2], c: 0x4a3d72 },
   { p: [-4.8, 0.35,  1.9], s: [1.8, 0.7, 1.8], c: 0x453a6b },
   { p: [ 1.7, 1.15,  4.4], s: [2.6, 2.3, 2.6], c: 0x554480 },
-];
-
-const colliders = [];
-for (const b of boxDefs) {
-  const g = flat(new THREE.BoxGeometry(b.s[0], b.s[1], b.s[2]));
-  const m = new THREE.Mesh(g, makeMaterial(b.c));
+]) {
+  const m = new THREE.Mesh(
+    flat(new THREE.BoxGeometry(b.s[0], b.s[1], b.s[2])),
+    makeMaterial(b.c)
+  );
   m.position.set(b.p[0], b.p[1], b.p[2]);
   scene.add(m);
   colliders.push({
@@ -241,7 +337,78 @@ for (const b of boxDefs) {
 }
 
 /* =========================================================
-   CREATURE  —  PARTICLES & CONSTRAINTS
+   MATERIAL DEFINITIONS
+   ========================================================= */
+const MAT_LIST = [
+  { id: 'plush',   label: 'PLUSH',   dot: 0x7de3b8 },
+  { id: 'vase',    label: 'VASE',    dot: 0xefecfa },
+  { id: 'liquid',  label: 'LIQUID',  dot: 0x5fe8c8 },
+  { id: 'balloon', label: 'BALLOON', dot: 0xff7fa8 },
+  { id: 'rubber',  label: 'RUBBER',  dot: 0xffc93c },
+];
+
+const MATS = {
+  plush: {
+    stiffness: 1.0, damping: 0.992, iterations: 10,
+    restitution: 0.28, friction: 0.72, gravityMul: 1.0,
+    radiusMul: 1.0, breakStretch: 0, drag: 0.0, ceiling: 1e9,
+    cohesion: 0, boneThickness: 1.0, meltDuration: 0,
+    pal: { head:0x9ff2cd, body:0x7de3b8, limb:0x6fd3ab, belly:0xffe9a8,
+           ear:0x8ae8c0, earIn:0xff9ec2, cheek:0xff9ec2, eyeW:0xf6fcff, eyeD:0x1a1226 },
+  },
+  // PORCELAIN — extreme brittleness, hair-trigger fracture
+  vase: {
+    stiffness: 1.0, damping: 0.9993, iterations: 40,
+    restitution: 0.24, friction: 0.97, gravityMul: 1.0,
+    radiusMul: 0.68, breakStretch: 1.10, drag: 0.0, ceiling: 1e9,
+    cohesion: 0, boneThickness: 0.9, meltDuration: 0,
+    pal: { head:0xfaf8ff, body:0xefecfa, limb:0xe2ddf2, belly:0xd3cbe9,
+           ear:0xefecfa, earIn:0xd9d2ee, cheek:0xe6c9d8, eyeW:0xffffff, eyeD:0x2b2440 },
+  },
+  // LIQUID — the body softens, sags and then dissolves limb by limb into a
+  // real SPH fluid (see the LIQUID section below). Nothing about the puddle
+  // is faked: it is ~520 particles solving density constraints every frame.
+  liquid: {
+    stiffness: 0.62, damping: 0.9955, iterations: 9,
+    restitution: 0.06, friction: 0.38, gravityMul: 1.0,
+    radiusMul: 1.30, breakStretch: 0, drag: 0.22, ceiling: 1e9,
+    cohesion: 11, boneThickness: 1.7,
+    meltDuration: 6.0,      // seconds until the body is fully liquefied
+    pal: { head:0x9ff5e0, body:0x5fe8c8, limb:0x4ed4b4, belly:0xc8fff0,
+           ear:0x5fe8c8, earIn:0x9ff5e0, cheek:0xd8fff8, eyeW:0xffffff, eyeD:0x062a26 },
+  },
+  balloon: {
+    stiffness: 0.72, damping: 0.955, iterations: 8,
+    restitution: 0.60, friction: 0.50, gravityMul: -0.50,
+    radiusMul: 1.18, breakStretch: 0, drag: 0.50, ceiling: 8.4,
+    cohesion: 0, boneThickness: 1.0, meltDuration: 0,
+    pal: { head:0xffa8c4, body:0xff7fa8, limb:0xff6f9c, belly:0xffd0dd,
+           ear:0xff7fa8, earIn:0xffc2d4, cheek:0xff5f8f, eyeW:0xffffff, eyeD:0x3a1020 },
+  },
+  // RUBBER — EXTRA rubbery. Near-perfect restitution, almost no damping,
+  // bulging squash-and-stretch on every bone.
+  rubber: {
+    stiffness: 1.0, damping: 0.9992, iterations: 18,
+    restitution: 0.965, friction: 0.98, gravityMul: 1.0,
+    radiusMul: 0.92, breakStretch: 0, drag: 0.0, ceiling: 14,
+    cohesion: 0, boneThickness: 1.05, meltDuration: 0,
+    pal: { head:0xffe066, body:0xffc93c, limb:0xffb703, belly:0xfff0a8,
+           ear:0xffc93c, earIn:0xffe066, cheek:0xff9a3c, eyeW:0xffffff, eyeD:0x2a1a00 },
+  },
+};
+
+const state = {
+  material: 'plush',
+  pose: false,
+  zeroG: false,
+  magnet: false,
+  wind: false,
+  melt: 0,
+  meltTimer: 0,
+};
+
+/* =========================================================
+   CREATURE — PARTICLES & CONSTRAINTS
    ========================================================= */
 class Particle {
   constructor(x, y, z, mass, radius) {
@@ -250,6 +417,7 @@ class Particle {
     this.invMass = mass > 0 ? 1 / mass : 0;
     this.radius = radius;
     this.grabbed = false;
+    this._invMass = this.invMass;
   }
 }
 
@@ -279,7 +447,9 @@ for (const name in defs) {
   particles.push(p);
 }
 
+const MODE = { eq: 0, min: 1, max: 2 };
 const constraints = [];
+
 const constraintDefs = [
   ['head', 'chest',       1.00, 'eq'],
   ['chest', 'hip',        1.00, 'eq'],
@@ -305,26 +475,30 @@ const constraintDefs = [
   ['handL', 'handR',      0.20, 'min'],
 ];
 
-const MODE = { eq: 0, min: 1, max: 2 };
-
 for (const [a, b, s, mode] of constraintDefs) {
   const pa = P[a], pb = P[b];
   const rest = pa.pos.distanceTo(pb.pos) * s;
-  constraints.push({ a: pa, b: pb, rest, stiffness: 1.0, mode: MODE[mode] });
+  constraints.push({
+    a: pa, b: pb, rest, mode: MODE[mode],
+    stiffness: 1.0, broken: false, breakAt: 0, repairTimer: 0,
+  });
 }
 
 /* =========================================================
-   CREATURE  —  MESHES
+   CREATURE — MESHES
    ========================================================= */
-const matHead    = makeMaterial(0x9ff2cd);
-const matBody    = makeMaterial(0x7de3b8);
-const matLimb    = makeMaterial(0x6fd3ab);
-const matBelly   = makeMaterial(0xffe9a8);
-const matEyeW    = makeMaterial(0xf6fcff);
-const matEyeD    = makeMaterial(0x1a1226);
-const matCheek   = makeMaterial(0xff9ec2);
-const matEar     = makeMaterial(0x8ae8c0);
-const matEarIn   = makeMaterial(0xff9ec2);
+const colorTargets = [];
+function reg(mesh, key) { colorTargets.push({ mat: mesh.material, key }); return mesh; }
+
+const matHead  = makeMaterial(0x9ff2cd);
+const matBody  = makeMaterial(0x7de3b8);
+const matLimb  = makeMaterial(0x6fd3ab);
+const matBelly = makeMaterial(0xffe9a8);
+const matEyeW  = makeMaterial(0xf6fcff);
+const matEyeD  = makeMaterial(0x1a1226);
+const matCheek = makeMaterial(0xff9ec2);
+const matEar   = makeMaterial(0x8ae8c0);
+const matEarIn = makeMaterial(0xff9ec2);
 
 function sphereMesh(r, mat, detail = 1) {
   return new THREE.Mesh(flat(new THREE.IcosahedronGeometry(r, detail)), mat);
@@ -333,110 +507,889 @@ function boneMesh(r, mat, seg = 7) {
   return new THREE.Mesh(flat(new THREE.CylinderGeometry(r, r, 1, seg, 1, false)), mat);
 }
 
-/* --- head group --- */
 const headGroup = new THREE.Group();
 scene.add(headGroup);
+headGroup.add(reg(sphereMesh(0.56, matHead, 1), 'head'));
 
-const headBall = sphereMesh(0.56, matHead, 1);
-headGroup.add(headBall);
-
-// ears
 for (const s of [-1, 1]) {
-  const ear = new THREE.Mesh(flat(new THREE.ConeGeometry(0.17, 0.34, 4)), matEar);
+  const ear = reg(new THREE.Mesh(flat(new THREE.ConeGeometry(0.17, 0.34, 4)), matEar), 'ear');
   ear.position.set(s * 0.27, 0.45, -0.02);
-  ear.rotation.z = -s * 0.34;
-  ear.rotation.y = Math.PI / 4;
+  ear.rotation.z = -s * 0.34; ear.rotation.y = Math.PI / 4;
   headGroup.add(ear);
 
-  const inner = new THREE.Mesh(flat(new THREE.ConeGeometry(0.09, 0.20, 4)), matEarIn);
+  const inner = reg(new THREE.Mesh(flat(new THREE.ConeGeometry(0.09, 0.20, 4)), matEarIn), 'earIn');
   inner.position.set(s * 0.28, 0.48, 0.03);
-  inner.rotation.z = -s * 0.34;
-  inner.rotation.y = Math.PI / 4;
+  inner.rotation.z = -s * 0.34; inner.rotation.y = Math.PI / 4;
   headGroup.add(inner);
 }
 
-// googly eyes (slightly mismatched for maximum silliness)
-const eyeData = [
-  { x: -0.21, y:  0.10, z: 0.435, pr: 0.078, px: -0.155, py: 0.10 },
-  { x:  0.21, y:  0.07, z: 0.435, pr: 0.066, px:  0.245, py: 0.09 },
-];
-for (const e of eyeData) {
-  const white = sphereMesh(0.135, matEyeW, 1);
+for (const e of [
+  { x: -0.21, y: 0.10, z: 0.435, pr: 0.078, px: -0.155, py: 0.10 },
+  { x:  0.21, y: 0.07, z: 0.435, pr: 0.066, px:  0.245, py: 0.09 },
+]) {
+  const white = reg(sphereMesh(0.135, matEyeW, 1), 'eyeW');
   white.position.set(e.x, e.y, e.z);
   headGroup.add(white);
 
-  const pupil = sphereMesh(e.pr, matEyeD, 1);
+  const pupil = reg(sphereMesh(e.pr, matEyeD, 1), 'eyeD');
   pupil.position.set(e.px, e.py, 0.53);
   headGroup.add(pupil);
 }
 
-// cheeks
 for (const s of [-1, 1]) {
-  const cheek = sphereMesh(0.10, matCheek, 0);
+  const cheek = reg(sphereMesh(0.10, matCheek, 0), 'cheek');
   cheek.position.set(s * 0.36, -0.13, 0.37);
   headGroup.add(cheek);
 }
 
-// little mouth
-const mouth = sphereMesh(0.09, matEyeD, 0);
+const mouth = reg(sphereMesh(0.09, matEyeD, 0), 'eyeD');
 mouth.position.set(0, -0.18, 0.47);
 mouth.scale.set(1.6, 0.65, 0.6);
 headGroup.add(mouth);
 
-/* --- joint spheres --- */
-const jointData = [
-  ['chest',     0.36, matBelly, 1],
-  ['hip',       0.33, matBody,  1],
-  ['shoulderL', 0.155, matLimb, 1],
-  ['shoulderR', 0.155, matLimb, 1],
-  ['elbowL',    0.135, matLimb, 0],
-  ['elbowR',    0.135, matLimb, 0],
-  ['handL',     0.175, matLimb, 1],
-  ['handR',     0.175, matLimb, 1],
-  ['kneeL',     0.145, matLimb, 0],
-  ['kneeR',     0.145, matLimb, 0],
-  ['footL',     0.19,  matLimb, 1],
-  ['footR',     0.19,  matLimb, 1],
-];
-const jointMeshes = [];
-for (const [name, r, mat, det] of jointData) {
-  const m = sphereMesh(r, mat, det);
-  if (name === 'footL' || name === 'footR') m.scale.set(1.15, 0.85, 1.35);
-  scene.add(m);
-  jointMeshes.push({ mesh: m, p: P[name] });
+/* Melt ordering: the extremities liquefy first, the head last. A part is
+   fully solid until `melt` passes its order, then dissolves over MELT_WINDOW. */
+const MELT_WINDOW = 0.30;
+const PART_ORDER = {
+  handL: 0.00, handR: 0.00,
+  footL: 0.05, footR: 0.05,
+  elbowL: 0.17, elbowR: 0.17,
+  kneeL: 0.21, kneeR: 0.21,
+  shoulderL: 0.36, shoulderR: 0.36,
+  hip: 0.47, chest: 0.58, head: 0.70,
+};
+function partAlpha(order, melt) {
+  if (melt <= order) return 1;
+  const k = 1 - (melt - order) / MELT_WINDOW;
+  return k < 0 ? 0 : k;
 }
 
-/* --- bones --- */
+const jointData = [
+  ['chest',     0.36,  matBelly, 1, 'belly'],
+  ['hip',       0.33,  matBody,  1, 'body'],
+  ['shoulderL', 0.155, matLimb,  1, 'limb'],
+  ['shoulderR', 0.155, matLimb,  1, 'limb'],
+  ['elbowL',    0.135, matLimb,  0, 'limb'],
+  ['elbowR',    0.135, matLimb,  0, 'limb'],
+  ['handL',     0.175, matLimb,  1, 'limb'],
+  ['handR',     0.175, matLimb,  1, 'limb'],
+  ['kneeL',     0.145, matLimb,  0, 'limb'],
+  ['kneeR',     0.145, matLimb,  0, 'limb'],
+  ['footL',     0.19,  matLimb,  1, 'limb'],
+  ['footR',     0.19,  matLimb,  1, 'limb'],
+];
+const jointMeshes = [];
+for (const [name, r, mat, det, key] of jointData) {
+  const m = reg(sphereMesh(r, mat, det), key);
+  const base = new THREE.Vector3(1, 1, 1);
+  if (name === 'footL' || name === 'footR') base.set(1.15, 0.85, 1.35);
+  m.scale.copy(base);
+  scene.add(m);
+  jointMeshes.push({ mesh: m, p: P[name], base, order: PART_ORDER[name] });
+}
+
 const boneData = [
-  ['chest', 'hip',      0.30, matBelly, 8],
+  ['chest', 'hip',       0.30,  matBelly, 8],
   ['shoulderL', 'elbowL', 0.105, matLimb, 6],
-  ['elbowL', 'handL',   0.095, matLimb, 6],
+  ['elbowL', 'handL',    0.095, matLimb, 6],
   ['shoulderR', 'elbowR', 0.105, matLimb, 6],
-  ['elbowR', 'handR',   0.095, matLimb, 6],
-  ['hip', 'kneeL',      0.125, matLimb, 6],
-  ['kneeL', 'footL',    0.115, matLimb, 6],
-  ['hip', 'kneeR',      0.125, matLimb, 6],
-  ['kneeR', 'footR',    0.115, matLimb, 6],
-  ['chest', 'shoulderL', 0.13, matLimb, 6],
-  ['chest', 'shoulderR', 0.13, matLimb, 6],
+  ['elbowR', 'handR',    0.095, matLimb, 6],
+  ['hip', 'kneeL',       0.125, matLimb, 6],
+  ['kneeL', 'footL',     0.115, matLimb, 6],
+  ['hip', 'kneeR',       0.125, matLimb, 6],
+  ['kneeR', 'footR',     0.115, matLimb, 6],
+  ['chest', 'shoulderL', 0.130, matLimb, 6],
+  ['chest', 'shoulderR', 0.130, matLimb, 6],
 ];
 const boneMeshes = [];
 for (const [a, b, r, mat, seg] of boneData) {
-  const m = boneMesh(r, mat, seg);
+  const m = reg(boneMesh(r, mat, seg), a === 'chest' && b === 'hip' ? 'belly' : 'limb');
   scene.add(m);
-  boneMeshes.push({ mesh: m, a: P[a], b: P[b] });
+  const pa = P[a], pb = P[b];
+  boneMeshes.push({
+    mesh: m, a: pa, b: pb,
+    restLen: pa.pos.distanceTo(pb.pos),
+    order: Math.min(PART_ORDER[a], PART_ORDER[b]),
+  });
 }
+
+/* =========================================================
+   SHARDS
+   ========================================================= */
+const SHARD_COUNT = 220;
+const shardGeo = flat(new THREE.TetrahedronGeometry(0.075));
+const shardMat = makeMaterial(0xf6f4ff);
+const shards = [];
+for (let i = 0; i < SHARD_COUNT; i++) {
+  const m = new THREE.Mesh(shardGeo, shardMat);
+  m.visible = false;
+  scene.add(m);
+  shards.push({ mesh: m, vel: new THREE.Vector3(), rot: new THREE.Vector3(), life: 0, base: 1 });
+}
+let shardCursor = 0;
+
+function spawnShards(pos, n, baseVel) {
+  for (let i = 0; i < n; i++) {
+    const s = shards[shardCursor];
+    shardCursor = (shardCursor + 1) % SHARD_COUNT;
+    s.mesh.visible = true;
+    s.mesh.position.copy(pos);
+    s.mesh.rotation.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+    s.life = 1.6 + Math.random() * 1.4;
+    s.base = 0.55 + Math.random() * 1.0;
+    s.vel.set(
+      (Math.random() - 0.5) * 8,
+      Math.random() * 6.5 + 1.8,
+      (Math.random() - 0.5) * 8
+    ).add(baseVel);
+    s.rot.set((Math.random() - 0.5) * 22, (Math.random() - 0.5) * 22, (Math.random() - 0.5) * 22);
+  }
+}
+
+function updateShards(dt) {
+  for (const s of shards) {
+    if (!s.mesh.visible) continue;
+    s.life -= dt;
+    if (s.life <= 0) { s.mesh.visible = false; continue; }
+
+    s.vel.y -= 26 * dt;
+    s.mesh.position.addScaledVector(s.vel, dt);
+    if (s.mesh.position.y < 0.05) {
+      s.mesh.position.y = 0.05;
+      s.vel.y *= -0.34;
+      s.vel.x *= 0.7;
+      s.vel.z *= 0.7;
+    }
+    s.mesh.rotation.x += s.rot.x * dt;
+    s.mesh.rotation.y += s.rot.y * dt;
+    s.mesh.rotation.z += s.rot.z * dt;
+
+    const k = Math.min(1, s.life / 0.8);
+    s.mesh.scale.setScalar(s.base * (0.35 + 0.65 * k));
+  }
+}
+
+/* =========================================================
+   LIQUID — Position Based Fluids (Macklin & Muller, 2013)
+
+   The LIQUID material is not a shader trick. The buddy sheds his body into
+   a few hundred particles that solve a real density constraint every frame:
+   spatial-hash neighbour search, per-particle lambdas, an artificial
+   pressure term for surface tension, XSPH viscosity, a ground boundary that
+   contributes density of its own, and a yield stress so the settled puddle
+   behaves like slime rather than water. It splashes on impact, sloshes,
+   pools around whatever is left of him, and can be shoved around by hand.
+   ========================================================= */
+const FL = {
+  max: 440,
+  n: 0,
+  h: 0.34,                       // smoothing radius
+  h2: 0.34 * 0.34,
+  rho0: 0,                       // rest density (filled in below)
+  eps: 18,                       // CFM relaxation
+  iters: 3,                      // solver iterations per step
+  visc: 0.11,                    // XSPH viscosity
+  coh: 80,                       // cohesion / surface tension
+  yield: 2.0,                    // yield stress: slow creep is damped away
+  wall: 0.35,                    // how much density the ground contributes
+  corrK: 0.0012,                 // artificial pressure strength
+  corrQ2: (0.21 * 0.34) * (0.21 * 0.34),
+  rad: 0.075,                    // collision radius
+  drawRad: 0.175,                // render radius
+  maxN: 48,                      // neighbour cap
+  maxSpeed: 26,
+  maxPush: 0.05,                 // per-step push out of a *moving* solid
+  cx: 0, cy: 1, cz: 0,           // centroid, for camera & pointer picking
+};
+
+const POLY6 = 315 / (64 * Math.PI * Math.pow(FL.h, 9));
+const SPIKY = -45 / (Math.PI * Math.pow(FL.h, 6));
+
+function kernW(r2) {
+  const d = FL.h2 - r2;
+  return d <= 0 ? 0 : POLY6 * d * d * d;
+}
+
+/* Rest density = the density a particle sees inside a regular lattice
+   packed at the fluid's rest spacing. Derived instead of guessed so the
+   solver stays stable if the kernel radius is ever retuned. */
+(function () {
+  const s = FL.h * 0.55;
+  const R = Math.ceil(FL.h / s);
+  let rho = 0;
+  for (let i = -R; i <= R; i++)
+    for (let j = -R; j <= R; j++)
+      for (let k = -R; k <= R; k++) {
+        const r2 = (i * i + j * j + k * k) * s * s;
+        if (r2 < FL.h2) rho += kernW(r2);
+      }
+  FL.rho0 = rho;
+  FL.spacing = s;
+})();
+
+/* ---- ground as a boundary, not just a clamp ----
+
+   A kernel that only sees other fluid particles cannot tell "resting on the
+   floor" from "floating in a thin sheet": once a puddle is one particle
+   thick every neighbour is in the same plane, the pressure gradient is
+   purely horizontal, and it creeps outwards forever instead of holding a
+   depth. So the floor contributes density of its own, exactly as a packed
+   half-space of ghost particles below it would, with a gradient that points
+   straight up. Both tables are summed from the same lattice that defines the
+   rest density, so they stay consistent if the kernel is ever retuned. */
+const WALL_N = 32;
+const wallRho = new Float32Array(WALL_N + 1);
+const wallGrad = new Float32Array(WALL_N + 1);
+(function () {
+  const s = FL.spacing, h = FL.h, h2 = FL.h2, R = Math.ceil(h / s);
+  for (let n = 0; n <= WALL_N; n++) {
+    const t = (n / WALL_N) * h;
+    let rho = 0, grad = 0;
+    for (let j = 0; j <= R; j++) {
+      const dy = t + s * 0.5 + j * s;
+      if (dy >= h) break;
+      for (let i = -R; i <= R; i++)
+        for (let k = -R; k <= R; k++) {
+          const r2 = (i * i + k * k) * s * s + dy * dy;
+          if (r2 >= h2) continue;
+          rho += kernW(r2);
+          const r = Math.sqrt(r2);
+          if (r > 1e-6) grad += dy * (SPIKY * (h - r) * (h - r) / (r * FL.rho0));
+        }
+    }
+    wallRho[n] = rho;
+    wallGrad[n] = grad;
+  }
+})();
+
+function wallIndex(y) {
+  const t = (y - FL.rad) / FL.h;
+  if (t >= 1) return -1;
+  return t <= 0 ? 0 : (t * WALL_N) | 0;
+}
+
+const fpX = new Float32Array(FL.max), fpY = new Float32Array(FL.max), fpZ = new Float32Array(FL.max);
+const fvX = new Float32Array(FL.max), fvY = new Float32Array(FL.max), fvZ = new Float32Array(FL.max);
+const fqX = new Float32Array(FL.max), fqY = new Float32Array(FL.max), fqZ = new Float32Array(FL.max);
+const faX = new Float32Array(FL.max), faY = new Float32Array(FL.max), faZ = new Float32Array(FL.max);
+const fSize = new Float32Array(FL.max);
+const fLam = new Float32Array(FL.max);
+const fRho = new Float32Array(FL.max);
+const fNbr = new Int32Array(FL.max * FL.maxN);
+const fNum = new Int32Array(FL.max);
+
+const GRID = 4096, GMASK = GRID - 1;
+const gCount = new Int32Array(GRID);
+const gStart = new Int32Array(GRID);
+const gFill  = new Int32Array(GRID);
+const gEntry = new Int32Array(FL.max);
+const gCell  = new Int32Array(FL.max);
+
+function cellHash(ix, iy, iz) {
+  return ((ix * 92837111) ^ (iy * 689287499) ^ (iz * 283923481)) & GMASK;
+}
+
+/* ---- solid obstacles the fluid must flow around ---- */
+const fSolid = new Float32Array(64);   // x, y, z, r  per entry
+let fSolidN = 0;
+
+const finger = { on: false, x: 0, y: 0, z: 0, px: 0, py: 0, pz: 0, vx: 0, vy: 0, vz: 0, r: 0.40 };
+const wind = { x: 0, z: 0 };
+
+/* ---- rendering ---- */
+const FLUID_VERT = `
+uniform vec2 uSnap;
+attribute vec3 aTint;
+varying vec3 vNormal;
+varying vec3 vViewPos;
+varying vec3 vWorld;
+varying vec3 vTint;
+void main() {
+  vTint = aTint;
+  #ifdef USE_INSTANCING
+    vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
+    vNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+  #else
+    vec4 wp = modelMatrix * vec4(position, 1.0);
+    vNormal = normalize(mat3(modelMatrix) * normal);
+  #endif
+  vWorld = wp.xyz;
+  vec4 mv = viewMatrix * wp;
+  vViewPos = mv.xyz;
+  vec4 clip = projectionMatrix * mv;
+  vec2 ndc = clip.xy / clip.w;
+  ndc = floor(ndc * uSnap + 0.5) / uSnap;
+  clip.xy = ndc * clip.w;
+  gl_Position = clip;
+}
+`;
+
+const FLUID_FRAG = `
+uniform vec3  uFogColor;
+uniform float uFogNear;
+uniform float uFogFar;
+uniform vec3  uLightDir;
+varying vec3 vNormal;
+varying vec3 vViewPos;
+varying vec3 vWorld;
+varying vec3 vTint;
+void main() {
+  vec3 n = normalize(vNormal);
+  vec3 L = normalize(uLightDir);
+  vec3 V = normalize(cameraPosition - vWorld);
+  vec3 H = normalize(L + V);
+  float lambert = max(dot(n, L), 0.0);
+  vec3 col = vTint * (0.42 + 0.72 * lambert);
+  float spec = pow(max(dot(n, H), 0.0), 26.0);
+  col += vec3(0.80, 1.00, 0.96) * spec * 0.85;
+  float fres = pow(1.0 - max(dot(n, V), 0.0), 3.0);
+  col += vTint * fres * 0.55;
+  col = floor(col * 26.0 + 0.5) / 26.0;
+  float d = length(vViewPos);
+  float f = clamp((d - uFogNear) / (uFogFar - uFogNear), 0.0, 1.0);
+  col = mix(col, uFogColor, f);
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+const fluidMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    uFogColor: shared.uFogColor,
+    uFogNear:  shared.uFogNear,
+    uFogFar:   shared.uFogFar,
+    uLightDir: shared.uLightDir,
+    uSnap:     shared.uSnap,
+  },
+  vertexShader: FLUID_VERT,
+  fragmentShader: FLUID_FRAG,
+});
+
+const fluidGeo = flat(new THREE.IcosahedronGeometry(1, 0));
+const fluidTint = new THREE.InstancedBufferAttribute(new Float32Array(FL.max * 3), 3);
+fluidTint.setUsage(THREE.DynamicDrawUsage);
+fluidGeo.setAttribute('aTint', fluidTint);
+
+const fluidMesh = new THREE.InstancedMesh(fluidGeo, fluidMaterial, FL.max);
+fluidMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+fluidMesh.frustumCulled = false;
+fluidMesh.count = 0;
+fluidMesh.visible = false;
+scene.add(fluidMesh);
+
+const DEEP = new THREE.Color(0x1aa793);
+const SURF = new THREE.Color(0x63ecd0);
+const FOAM = new THREE.Color(0xdcfff6);
+
+const _fUp = new THREE.Vector3(0, 1, 0);
+const _fPos = new THREE.Vector3();
+const _fDir = new THREE.Vector3();
+const _fScale = new THREE.Vector3();
+const _fQuat = new THREE.Quaternion();
+const _fMat = new THREE.Matrix4();
+
+function fluidReset() {
+  FL.n = 0;
+  fluidMesh.count = 0;
+  fluidMesh.visible = false;
+  finger.on = false;
+}
+
+function fluidSpawn(x, y, z, vx, vy, vz) {
+  if (FL.n >= FL.max) return;
+
+  /* Never let a particle start life inside the body: the collision pass
+     would fire it out like a bullet on its very first step. Drops are
+     born on the surface of whatever part they came off. */
+  for (let s = 0; s < fSolidN; s++) {
+    const o = s * 4;
+    const rr = fSolid[o + 3] + FL.rad;
+    let dx = x - fSolid[o], dy = y - fSolid[o + 1], dz = z - fSolid[o + 2];
+    const d2 = dx * dx + dy * dy + dz * dz;
+    if (d2 >= rr * rr) continue;
+    let d = Math.sqrt(d2);
+    if (d < 1e-4) { dx = 0; dy = 1; dz = 0; d = 1; }
+    const k = rr / d;
+    x = fSolid[o] + dx * k;
+    y = fSolid[o + 1] + dy * k;
+    z = fSolid[o + 2] + dz * k;
+  }
+  if (y < FL.rad) y = FL.rad;
+
+  const i = FL.n++;
+  fpX[i] = x; fpY[i] = y; fpZ[i] = z;
+  fvX[i] = vx; fvY[i] = vy; fvZ[i] = vz;
+  fRho[i] = FL.rho0;
+  fLam[i] = 0;
+  fSize[i] = 0.82 + Math.random() * 0.36;
+}
+
+/* ---------------------------------------------------------
+   Emission — the body dissolves into the fluid, part by part
+   --------------------------------------------------------- */
+const MELT_EMIT = [
+  ['handL', 'elbowL', 0.16], ['handR', 'elbowR', 0.16],
+  ['footL', 'kneeL', 0.16],  ['footR', 'kneeR', 0.16],
+  ['elbowL', 'shoulderL', 0.16], ['elbowR', 'shoulderR', 0.16],
+  ['kneeL', 'hip', 0.18], ['kneeR', 'hip', 0.18],
+  ['shoulderL', 'chest', 0.18], ['shoulderR', 'chest', 0.18],
+  ['hip', 'chest', 0.26],
+  ['chest', 'head', 0.24],
+  ['head', 'head', 0.42],
+].map(([a, b, jit]) => ({
+  a: P[a], b: P[b], jit,
+  order: Math.min(PART_ORDER[a], PART_ORDER[b]),
+}));
+
+const _emitPool = [];
+
+function meltEmit(meltK, dt, M) {
+  const want = Math.round(Math.min(1, meltK * 1.06) * FL.max);
+  let budget = Math.min(want - FL.n, 12);
+  if (budget <= 0) return;
+
+  rebuildFluidSolids(M, meltK);
+
+  _emitPool.length = 0;
+  for (const s of MELT_EMIT) if (meltK >= s.order) _emitPool.push(s);
+  if (_emitPool.length === 0) return;
+
+  const inv = 1 / dt;
+  while (budget-- > 0 && FL.n < FL.max) {
+    const s = _emitPool[(Math.random() * _emitPool.length) | 0];
+    const t = Math.random();
+    const j = s.jit;
+    const x = s.a.pos.x + (s.b.pos.x - s.a.pos.x) * t + (Math.random() - 0.5) * j;
+    const y = s.a.pos.y + (s.b.pos.y - s.a.pos.y) * t + (Math.random() - 0.5) * j;
+    const z = s.a.pos.z + (s.b.pos.z - s.a.pos.z) * t + (Math.random() - 0.5) * j;
+
+    let vx = (s.a.pos.x - s.a.prev.x) * inv;
+    let vy = (s.a.pos.y - s.a.prev.y) * inv;
+    let vz = (s.a.pos.z - s.a.prev.z) * inv;
+    const sp2 = vx * vx + vy * vy + vz * vz;
+    if (sp2 > 144) { const k = 12 / Math.sqrt(sp2); vx *= k; vy *= k; vz *= k; }
+
+    fluidSpawn(x, y, z, vx, vy, vz);
+  }
+}
+
+function rebuildFluidSolids(M, meltK) {
+  fSolidN = 0;
+  if (meltK >= 0.99) return;
+  for (const j of jointMeshes) {
+    const k = partAlpha(j.order, meltK);
+    if (k <= 0.08) continue;
+    const o = fSolidN * 4;
+    if (o + 3 >= fSolid.length) break;
+    fSolid[o] = j.p.pos.x; fSolid[o + 1] = j.p.pos.y; fSolid[o + 2] = j.p.pos.z;
+    fSolid[o + 3] = j.p.radius * M.radiusMul * k;
+    fSolidN++;
+  }
+  const hk = partAlpha(PART_ORDER.head, meltK);
+  if (hk > 0.08 && fSolidN * 4 + 3 < fSolid.length) {
+    const o = fSolidN * 4;
+    fSolid[o] = P.head.pos.x; fSolid[o + 1] = P.head.pos.y; fSolid[o + 2] = P.head.pos.z;
+    fSolid[o + 3] = 0.50 * M.radiusMul * hk;
+    fSolidN++;
+  }
+}
+
+/* ---------------------------------------------------------
+   Solver
+   --------------------------------------------------------- */
+function fluidCollide(i) {
+  const r = FL.rad;
+  let x = fqX[i], y = fqY[i], z = fqZ[i];
+
+  if (y < r) y = r;
+
+  for (let s = 0; s < colliders.length; s++) {
+    const c = colliders[s];
+    const nx = Math.max(c.min.x, Math.min(x, c.max.x));
+    const ny = Math.max(c.min.y, Math.min(y, c.max.y));
+    const nz = Math.max(c.min.z, Math.min(z, c.max.z));
+    const dx = x - nx, dy = y - ny, dz = z - nz;
+    const d2 = dx * dx + dy * dy + dz * dz;
+    if (d2 > r * r) continue;
+    if (d2 > 1e-10) {
+      const d = Math.sqrt(d2);
+      const k = (r - d) / d;
+      x += dx * k; y += dy * k; z += dz * k;
+    } else {
+      y = c.max.y + r;   // deep inside: pop out the top
+    }
+  }
+
+  /* Obstacles that move (the dissolving body, the pointer) only ever nudge
+     the fluid: an unbounded positional shove would read as an explosion once
+     the velocity is differenced back out of it. */
+  const maxPush = FL.maxPush;
+
+  for (let s = 0; s < fSolidN; s++) {
+    const o = s * 4;
+    const rr = fSolid[o + 3] + r;
+    const dx = x - fSolid[o], dy = y - fSolid[o + 1], dz = z - fSolid[o + 2];
+    const d2 = dx * dx + dy * dy + dz * dz;
+    if (d2 > rr * rr || d2 < 1e-10) continue;
+    const d = Math.sqrt(d2);
+    const push = Math.min(rr - d, maxPush) / d;
+    x += dx * push; y += dy * push; z += dz * push;
+  }
+
+  if (finger.on) {
+    const rr = finger.r + r;
+    const dx = x - finger.x, dy = y - finger.y, dz = z - finger.z;
+    const d2 = dx * dx + dy * dy + dz * dz;
+    if (d2 < rr * rr && d2 > 1e-10) {
+      const d = Math.sqrt(d2);
+      const push = Math.min(rr - d, maxPush) / d;
+      x += dx * push; y += dy * push; z += dz * push;
+    }
+  }
+
+  const B = 29;
+  if (x < -B) x = -B; else if (x > B) x = B;
+  if (z < -B) z = -B; else if (z > B) z = B;
+  if (y < r) y = r;
+
+  fqX[i] = x; fqY[i] = y; fqZ[i] = z;
+}
+
+function fluidGrid() {
+  const inv = 1 / FL.h;
+  gCount.fill(0);
+  for (let i = 0; i < FL.n; i++) {
+    const c = cellHash(
+      Math.floor(fqX[i] * inv),
+      Math.floor(fqY[i] * inv),
+      Math.floor(fqZ[i] * inv)
+    );
+    gCell[i] = c;
+    gCount[c]++;
+  }
+  let acc = 0;
+  for (let c = 0; c < GRID; c++) { gStart[c] = acc; acc += gCount[c]; gFill[c] = 0; }
+  for (let i = 0; i < FL.n; i++) {
+    const c = gCell[i];
+    gEntry[gStart[c] + gFill[c]++] = i;
+  }
+}
+
+function fluidNeighbours() {
+  const inv = 1 / FL.h, h2 = FL.h2, maxN = FL.maxN;
+  for (let i = 0; i < FL.n; i++) {
+    const xi = fqX[i], yi = fqY[i], zi = fqZ[i];
+    const ix = Math.floor(xi * inv), iy = Math.floor(yi * inv), iz = Math.floor(zi * inv);
+    const base = i * maxN;
+    let cnt = 0;
+
+    scan:
+    for (let a = -1; a <= 1; a++)
+      for (let b = -1; b <= 1; b++)
+        for (let c = -1; c <= 1; c++) {
+          const cell = cellHash(ix + a, iy + b, iz + c);
+          const s = gStart[cell], e = s + gCount[cell];
+          for (let k = s; k < e; k++) {
+            const j = gEntry[k];
+            if (j === i) continue;
+            const dx = xi - fqX[j], dy = yi - fqY[j], dz = zi - fqZ[j];
+            if (dx * dx + dy * dy + dz * dz >= h2) continue;   // hash collisions filtered here
+            fNbr[base + cnt] = j;
+            if (++cnt >= maxN) break scan;
+          }
+        }
+
+    fNum[i] = cnt;
+  }
+}
+
+function fluidLambda() {
+  const rho0 = FL.rho0, eps = FL.eps, maxN = FL.maxN, h = FL.h;
+  const w0 = kernW(0);
+  for (let i = 0; i < FL.n; i++) {
+    const base = i * maxN, n = fNum[i];
+    const xi = fqX[i], yi = fqY[i], zi = fqZ[i];
+    let rho = w0, gx = 0, gy = 0, gz = 0, sumGrad2 = 0;
+
+    for (let k = 0; k < n; k++) {
+      const j = fNbr[base + k];
+      const dx = xi - fqX[j], dy = yi - fqY[j], dz = zi - fqZ[j];
+      const r2 = dx * dx + dy * dy + dz * dz;
+      rho += kernW(r2);
+      const r = Math.sqrt(r2);
+      if (r < 1e-6) continue;
+      const c = SPIKY * (h - r) * (h - r) / (r * rho0);
+      const wx = dx * c, wy = dy * c, wz = dz * c;
+      gx += wx; gy += wy; gz += wz;
+      sumGrad2 += wx * wx + wy * wy + wz * wz;
+    }
+
+    const wi = wallIndex(yi);
+    if (wi >= 0) {
+      const wg = wallGrad[wi] * FL.wall;
+      rho += wallRho[wi] * FL.wall;
+      gy += wg;
+      sumGrad2 += wg * wg;
+    }
+
+    fRho[i] = rho;
+    sumGrad2 += gx * gx + gy * gy + gz * gz;
+    fLam[i] = -(rho / rho0 - 1) / (sumGrad2 + eps);
+  }
+}
+
+function fluidDelta() {
+  const rho0 = FL.rho0, maxN = FL.maxN, h = FL.h;
+  const wq = kernW(FL.corrQ2);
+  for (let i = 0; i < FL.n; i++) {
+    const base = i * maxN, n = fNum[i];
+    const xi = fqX[i], yi = fqY[i], zi = fqZ[i], li = fLam[i];
+    let ax = 0, ay = 0, az = 0;
+
+    for (let k = 0; k < n; k++) {
+      const j = fNbr[base + k];
+      const dx = xi - fqX[j], dy = yi - fqY[j], dz = zi - fqZ[j];
+      const r2 = dx * dx + dy * dy + dz * dz;
+      const r = Math.sqrt(r2);
+      if (r < 1e-6) continue;
+      /* artificial pressure: stops particles clumping and gives the
+         surface a bit of tension, so droplets stay round */
+      const ratio = kernW(r2) / wq;
+      const scorr = -FL.corrK * ratio * ratio * ratio * ratio;
+      const c = SPIKY * (h - r) * (h - r) / (r * rho0);
+      const f = (li + fLam[j] + scorr) * c;
+      ax += dx * f; ay += dy * f; az += dz * f;
+    }
+
+    const wi = wallIndex(yi);
+    if (wi >= 0) ay += 2 * li * wallGrad[wi] * FL.wall;
+
+    faX[i] = ax; faY[i] = ay; faZ[i] = az;
+  }
+
+  for (let i = 0; i < FL.n; i++) {
+    fqX[i] += faX[i]; fqY[i] += faY[i]; fqZ[i] += faZ[i];
+    fluidCollide(i);
+  }
+}
+
+function fluidStep(dt, M) {
+  if (FL.n === 0 || state.pose) return;
+
+  const g = state.zeroG ? 0 : GRAVITY * M.gravityMul;
+  const drag = Math.max(0, 1 - 0.45 * dt);
+  const maxSp2 = FL.maxSpeed * FL.maxSpeed;
+
+  /* ---- external forces & prediction ---- */
+  for (let i = 0; i < FL.n; i++) {
+    let vx = fvX[i], vy = fvY[i], vz = fvZ[i];
+
+    vy += g * dt;
+    if (state.wind) { vx += wind.x * 9 * dt; vz += wind.z * 9 * dt; }
+
+    if (state.magnet && !finger.on) {
+      const dx = magnetTarget.x - fpX[i];
+      const dy = magnetTarget.y - fpY[i];
+      const dz = magnetTarget.z - fpZ[i];
+      const d2 = dx * dx + dy * dy + dz * dz + 0.25;
+      let acc = 200 / d2;
+      if (acc > 460) acc = 460;
+      const s = (acc * dt) / Math.sqrt(d2);
+      vx += dx * s; vy += dy * s; vz += dz * s;
+    }
+
+    if (finger.on) {
+      const dx = fpX[i] - finger.x, dy = fpY[i] - finger.y, dz = fpZ[i] - finger.z;
+      const rr = finger.r * 2.2;
+      const d2 = dx * dx + dy * dy + dz * dz;
+      if (d2 < rr * rr) {
+        const k = (1 - Math.sqrt(d2) / rr) * 0.55;
+        vx += (finger.vx - vx) * k;
+        vy += (finger.vy - vy) * k;
+        vz += (finger.vz - vz) * k;
+      }
+    }
+
+    vx *= drag; vy *= drag; vz *= drag;
+
+    const sp2 = vx * vx + vy * vy + vz * vz;
+    if (sp2 > maxSp2) {
+      const k = FL.maxSpeed / Math.sqrt(sp2);
+      vx *= k; vy *= k; vz *= k;
+    }
+
+    fvX[i] = vx; fvY[i] = vy; fvZ[i] = vz;
+    fqX[i] = fpX[i] + vx * dt;
+    fqY[i] = fpY[i] + vy * dt;
+    fqZ[i] = fpZ[i] + vz * dt;
+    fluidCollide(i);
+  }
+
+  /* ---- density constraint projection ---- */
+  fluidGrid();
+  fluidNeighbours();
+  for (let it = 0; it < FL.iters; it++) {
+    fluidLambda();
+    fluidDelta();
+  }
+
+  /* ---- velocity from the corrected positions ---- */
+  const inv = 1 / dt;
+  for (let i = 0; i < FL.n; i++) {
+    fvX[i] = (fqX[i] - fpX[i]) * inv;
+    fvY[i] = (fqY[i] - fpY[i]) * inv;
+    fvZ[i] = (fqZ[i] - fpZ[i]) * inv;
+  }
+
+  /* ---- XSPH viscosity + cohesion ----
+     Viscosity: neighbours drag each other along, so the blob reads as one
+     body of liquid instead of dry sand.
+     Cohesion: every particle is pulled towards its neighbours. Inside the
+     fluid those pulls cancel; on the surface they do not, which is exactly
+     surface tension — it keeps drops round and stops the puddle from
+     creeping out into a one-particle-thick film. ---- */
+  const vk = FL.visc / FL.rho0;
+  const ck = (FL.coh / FL.rho0) * dt;
+  for (let i = 0; i < FL.n; i++) {
+    const base = i * FL.maxN, n = fNum[i];
+    const xi = fqX[i], yi = fqY[i], zi = fqZ[i];
+    const vx = fvX[i], vy = fvY[i], vz = fvZ[i];
+    let ax = 0, ay = 0, az = 0;
+    let cx = 0, cy = 0, cz = 0;
+    for (let k = 0; k < n; k++) {
+      const j = fNbr[base + k];
+      const dx = xi - fqX[j], dy = yi - fqY[j], dz = zi - fqZ[j];
+      const w = kernW(dx * dx + dy * dy + dz * dz);
+      ax += (fvX[j] - vx) * w;
+      ay += (fvY[j] - vy) * w;
+      az += (fvZ[j] - vz) * w;
+      cx -= dx * w; cy -= dy * w; cz -= dz * w;
+    }
+    faX[i] = vx + ax * vk + cx * ck;
+    faY[i] = vy + ay * vk + cy * ck;
+    faZ[i] = vz + az * vk + cz * ck;
+  }
+
+  let sx = 0, sy = 0, sz = 0;
+  const floorY = FL.rad + 0.02;
+  const yv2 = FL.yield * FL.yield;
+  const yieldY = FL.rad + 0.45;
+  for (let i = 0; i < FL.n; i++) {
+    let vx = faX[i], vy = faY[i], vz = faZ[i];
+    if (fqY[i] < floorY) { vx *= 0.93; vz *= 0.93; }   // floor friction
+
+    /* Yield stress. A real slime is not a perfect liquid: below some shear it
+       behaves like a solid, which is why mud holds a mound and water does not.
+       Damping slow *lateral* motion in the settled layer quadratically kills
+       the pressure creep that would otherwise spread the puddle into an
+       infinitely thin film, and leaves falling, splashing and sloshing
+       completely untouched. */
+    if (fqY[i] < yieldY) {
+      const hs2 = vx * vx + vz * vz;
+      if (hs2 < yv2) {
+        const k = hs2 / yv2;
+        vx *= k; vz *= k;
+      }
+    }
+    fvX[i] = vx; fvY[i] = vy; fvZ[i] = vz;
+    fpX[i] = fqX[i]; fpY[i] = fqY[i]; fpZ[i] = fqZ[i];
+    sx += fpX[i]; sy += fpY[i]; sz += fpZ[i];
+  }
+  FL.cx = sx / FL.n; FL.cy = sy / FL.n; FL.cz = sz / FL.n;
+}
+
+/* ---------------------------------------------------------
+   Rendering — instanced blobs, stretched along their velocity,
+   tinted by depth inside the fluid (deep = dark, surface = bright,
+   fast = foamy).
+   --------------------------------------------------------- */
+function fluidRender() {
+  fluidMesh.count = FL.n;
+  if (FL.n === 0) { fluidMesh.visible = false; return; }
+  fluidMesh.visible = true;
+
+  const tints = fluidTint.array;
+
+  for (let i = 0; i < FL.n; i++) {
+    const vx = fvX[i], vy = fvY[i], vz = fvZ[i];
+    const sp = Math.sqrt(vx * vx + vy * vy + vz * vz);
+
+    let surf = 1 - fRho[i] / FL.rho0;
+    if (surf < 0) surf = 0; else if (surf > 1) surf = 1;
+
+    const r = FL.drawRad * fSize[i] * (1 - surf * 0.55);
+    const st = Math.min(0.9, sp * 0.030);
+
+    _fPos.set(fpX[i], fpY[i], fpZ[i]);
+    if (st > 0.02 && sp > 1e-4) {
+      _fDir.set(vx / sp, vy / sp, vz / sp);
+      _fQuat.setFromUnitVectors(_fUp, _fDir);
+      _fScale.set(r * (1 - st * 0.42), r * (1 + st), r * (1 - st * 0.42));
+    } else {
+      _fQuat.identity();
+      _fScale.set(r, r, r);
+    }
+    _fMat.compose(_fPos, _fQuat, _fScale);
+    fluidMesh.setMatrixAt(i, _fMat);
+
+    const foam = Math.min(1, sp * 0.075) * 0.5;
+    const o = i * 3;
+    tints[o]     = (DEEP.r + (SURF.r - DEEP.r) * surf) * (1 - foam) + FOAM.r * foam;
+    tints[o + 1] = (DEEP.g + (SURF.g - DEEP.g) * surf) * (1 - foam) + FOAM.g * foam;
+    tints[o + 2] = (DEEP.b + (SURF.b - DEEP.b) * surf) * (1 - foam) + FOAM.b * foam;
+  }
+
+  fluidMesh.instanceMatrix.needsUpdate = true;
+  fluidTint.needsUpdate = true;
+}
+
+/* =========================================================
+   MAGNET — orb + field rings
+   ========================================================= */
+const magnetOrb = sphereMesh(0.24, makeMaterial(0xff5fd0, { alpha: 0.95 }), 1);
+magnetOrb.visible = false;
+scene.add(magnetOrb);
+
+const fieldRings = new THREE.Group();
+scene.add(fieldRings);
+const ringMeshes = [];
+for (let i = 0; i < 3; i++) {
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(1, 0.035, 6, 24),
+    makeMaterial(0xff7fd8, { alpha: 0.55 })
+  );
+  ring.rotation.x = Math.PI / 2;
+  fieldRings.add(ring);
+  ringMeshes.push(ring);
+}
+fieldRings.visible = false;
+
+const magnetTarget = new THREE.Vector3(0, 2.5, 0);
 
 /* =========================================================
    PHYSICS
    ========================================================= */
 const GRAVITY = -26;
-const DAMPING = 0.992;
-const ITERATIONS = 10;
-const RESTITUTION = 0.28;
-const GROUND_FRICTION = 0.72;
+const ITERATIONS_CAP = 44;
+const RESTITUTION_MIN = 0.02;
+
+const _tmpA = new THREE.Vector3();
+const _tmpB = new THREE.Vector3();
+
+function breakConstraint(c) {
+  c.broken = true;
+  c.repairTimer = 2.4;
+  _tmpA.copy(c.a.pos).add(c.b.pos).multiplyScalar(0.5);
+  _tmpB.copy(c.b.pos).sub(c.a.pos);
+  const len = _tmpB.length();
+  if (len > 1e-5) _tmpB.multiplyScalar(0.55 / len); else _tmpB.set(0, 0, 0);
+
+  const isVase = state.material === 'vase';
+  spawnShards(_tmpA, isVase ? 10 : 3, _tmpB);
+  shake = Math.min(0.75, shake + (isVase ? 0.26 : 0.16));
+}
 
 function solveConstraint(c) {
+  if (c.broken) return;
   const a = c.a, b = c.b;
   const dx = b.pos.x - a.pos.x;
   const dy = b.pos.y - a.pos.y;
@@ -445,6 +1398,8 @@ function solveConstraint(c) {
   if (d2 < 1e-10) return;
 
   const dist = Math.sqrt(d2);
+
+  if (c.breakAt > 0 && dist > c.breakAt) { breakConstraint(c); return; }
   if (c.mode === 1 && dist >= c.rest) return;
   if (c.mode === 2 && dist <= c.rest) return;
 
@@ -459,66 +1414,155 @@ function solveConstraint(c) {
   b.pos.x -= kx * kb; b.pos.y -= ky * kb; b.pos.z -= kz * kb;
 }
 
-function collideSphere(p) {
-  // ground
-  if (p.pos.y < p.radius) p.pos.y = p.radius;
+function collideSphere(p, M, radius) {
+  const rad = radius !== undefined ? radius : p.radius;
+  if (p.pos.y < rad) p.pos.y = rad;
 
-  // boxes
+  // bouncy ceiling for rubber
+  if (M.ceiling < 1e8 && p.pos.y > M.ceiling - rad) {
+    const vyBefore = p.pos.y - p.prev.y;
+    p.pos.y = M.ceiling - rad;
+    if (vyBefore > 0.004) p.prev.y = p.pos.y - vyBefore * Math.max(RESTITUTION_MIN, M.restitution * 0.6);
+  }
+
   for (const c of colliders) {
     const cx = Math.max(c.min.x, Math.min(p.pos.x, c.max.x));
     const cy = Math.max(c.min.y, Math.min(p.pos.y, c.max.y));
     const cz = Math.max(c.min.z, Math.min(p.pos.z, c.max.z));
     const dx = p.pos.x - cx, dy = p.pos.y - cy, dz = p.pos.z - cz;
     const d2 = dx * dx + dy * dy + dz * dz;
-    if (d2 > p.radius * p.radius) continue;
+    if (d2 > rad * rad) continue;
 
     const d = Math.sqrt(d2);
     if (d > 1e-5) {
-      const s = (p.radius - d) / d;
+      const s = (rad - d) / d;
       p.pos.x += dx * s; p.pos.y += dy * s; p.pos.z += dz * s;
     } else {
-      // centre inside box — push out along the smallest axis
       const px1 = p.pos.x - c.min.x, px2 = c.max.x - p.pos.x;
       const py1 = p.pos.y - c.min.y, py2 = c.max.y - p.pos.y;
       const pz1 = p.pos.z - c.min.z, pz2 = c.max.z - p.pos.z;
       const m = Math.min(px1, px2, py1, py2, pz1, pz2);
-      if (m === px1) p.pos.x = c.min.x - p.radius;
-      else if (m === px2) p.pos.x = c.max.x + p.radius;
-      else if (m === py1) p.pos.y = c.min.y - p.radius;
-      else if (m === py2) p.pos.y = c.max.y + p.radius;
-      else if (m === pz1) p.pos.z = c.min.z - p.radius;
-      else p.pos.z = c.max.z + p.radius;
+      if (m === px1) p.pos.x = c.min.x - rad;
+      else if (m === px2) p.pos.x = c.max.x + rad;
+      else if (m === py1) p.pos.y = c.min.y - rad;
+      else if (m === py2) p.pos.y = c.max.y + rad;
+      else if (m === pz1) p.pos.z = c.min.z - rad;
+      else p.pos.z = c.max.z + rad;
     }
   }
 
-  // soft world bounds
   const B = 30;
   p.pos.x = Math.max(-B, Math.min(B, p.pos.x));
   p.pos.z = Math.max(-B, Math.min(B, p.pos.z));
 }
 
+let windPhase = 0;
+
 function physicsStep(dt) {
+  const M = MATS[state.material];
+  const frozen = state.pose;
   const dt2 = dt * dt;
+  const iters = Math.min(ITERATIONS_CAP, M.iterations);
 
-  // --- integrate (verlet) ---
-  for (const p of particles) {
-    if (p.invMass === 0 || p.grabbed) continue;
-    const vx = (p.pos.x - p.prev.x) * DAMPING;
-    const vy = (p.pos.y - p.prev.y) * DAMPING;
-    const vz = (p.pos.z - p.prev.z) * DAMPING;
-    p.prev.set(p.pos.x, p.pos.y, p.pos.z);
-    p.pos.x += vx;
-    p.pos.y += vy + GRAVITY * dt2;
-    p.pos.z += vz;
+  /* --- melt progress --- */
+  if (M.meltDuration > 0 && !frozen) {
+    state.meltTimer += dt;
+    state.melt = Math.min(1, state.meltTimer / M.meltDuration);
+  } else if (M.meltDuration === 0) {
+    state.melt = 0;
+    state.meltTimer = 0;
+  }
+  const meltK = state.melt;
+
+  /* --- melt eases material properties --- */
+  const stiffnessNow   = M.stiffness  * (1 - meltK * 0.94);   // 1 → 0.06
+  const dampingNow     = Math.max(0.90, M.damping - meltK * 0.035);
+  const frictionNow    = M.friction   * (1 - meltK * 0.68);
+  const gravityNow     = M.gravityMul * (1 + meltK * 0.45);
+  const radiusNow      = M.radiusMul  * (1 + meltK * 0.55);
+  const cohesionNow    = M.cohesion   * (1 - meltK * 0.78);
+
+  const g = (frozen || state.zeroG) ? 0 : GRAVITY * gravityNow;
+  const damp = frozen ? 0 : dampingNow;
+  const airDrag = frozen ? 1 : Math.max(0, 1 - M.drag * dt);
+
+  windPhase += dt;
+  const windX = state.wind ? (Math.sin(windPhase * 0.72) * 1.3 + Math.sin(windPhase * 2.1) * 0.45) : 0;
+  const windZ = state.wind ? (Math.cos(windPhase * 0.55) * 1.3 + Math.cos(windPhase * 2.4) * 0.45) : 0;
+  wind.x = windX; wind.z = windZ;
+
+  if (!frozen) {
+    /* ---- verlet integration ---- */
+    for (const p of particles) {
+      if (p.invMass === 0 || p.grabbed) continue;
+      const vx = (p.pos.x - p.prev.x) * damp * airDrag;
+      const vy = (p.pos.y - p.prev.y) * damp * airDrag;
+      const vz = (p.pos.z - p.prev.z) * damp * airDrag;
+      p.prev.set(p.pos.x, p.pos.y, p.pos.z);
+      p.pos.x += vx + windX * 16 * dt2;
+      p.pos.y += vy + g * dt2;
+      p.pos.z += vz + windZ * 16 * dt2;
+    }
+
+    /* ---- magnet: strong inverse-square pull ---- */
+    if (state.magnet && !dragging) {
+      for (const p of particles) {
+        if (p.invMass === 0 || p.grabbed) continue;
+        const dx = magnetTarget.x - p.pos.x;
+        const dy = magnetTarget.y - p.pos.y;
+        const dz = magnetTarget.z - p.pos.z;
+        const d2 = dx * dx + dy * dy + dz * dz + 0.20;
+        const d = Math.sqrt(d2);
+        let acc = 340 / d2;
+        if (acc > 900) acc = 900;
+        if (acc < 8) acc = 8;
+        const s = (acc * dt2) / d;
+        p.pos.x += dx * s;
+        p.pos.y += dy * s;
+        p.pos.z += dz * s;
+      }
+    }
+
+    /* ---- cohesion: pull every particle toward the centroid ---- */
+    if (cohesionNow > 0.01) {
+      let cx = 0, cy = 0, cz = 0, n = 0;
+      for (const p of particles) {
+        if (p.grabbed) continue;
+        cx += p.pos.x; cy += p.pos.y; cz += p.pos.z;
+        n++;
+      }
+      if (n > 0) {
+        cx /= n; cy /= n; cz /= n;
+        const k = cohesionNow * dt2;
+        for (const p of particles) {
+          if (p.grabbed) continue;
+          p.pos.x += (cx - p.pos.x) * k;
+          p.pos.y += (cy - p.pos.y) * k;
+          p.pos.z += (cz - p.pos.z) * k;
+        }
+      }
+    }
+
+    /* ---- melt: shed the body into the fluid ---- */
+    if (M.meltDuration > 0) meltEmit(meltK, dt, M);
   }
 
-  // --- solve ---
-  for (let i = 0; i < ITERATIONS; i++) {
+  /* ---- constraint tuning ---- */
+  for (const c of constraints) c.stiffness = stiffnessNow;
+  for (const c of constraints) {
+    if (c.broken) {
+      c.repairTimer -= dt;
+      if (c.repairTimer <= 0) c.broken = false;
+    }
+    c.breakAt = M.breakStretch > 0 ? c.rest * M.breakStretch : 0;
+  }
+
+  for (let i = 0; i < iters; i++) {
     for (const c of constraints) solveConstraint(c);
-    for (const p of particles) if (!p.grabbed) collideSphere(p);
+    for (const p of particles) if (!p.grabbed) collideSphere(p, M, p.radius * (1 + meltK * 0.4));
   }
 
-  // --- ground response (friction + bounce), once per step ---
+  /* ---- ground response ---- */
   for (const p of particles) {
     if (p.grabbed) continue;
     if (p.pos.y <= p.radius + 1e-4) {
@@ -527,12 +1571,21 @@ function physicsStep(dt) {
 
       const vx = p.pos.x - p.prev.x;
       const vz = p.pos.z - p.prev.z;
-      p.prev.x = p.pos.x - vx * GROUND_FRICTION;
-      p.prev.z = p.pos.z - vz * GROUND_FRICTION;
+      p.prev.x = p.pos.x - vx * frictionNow;
+      p.prev.z = p.pos.z - vz * frictionNow;
 
-      if (vyBefore < -0.004) p.prev.y = p.pos.y + vyBefore * RESTITUTION;
+      const rest = Math.max(RESTITUTION_MIN, M.restitution);
+      if (vyBefore < -0.004) p.prev.y = p.pos.y + vyBefore * rest;
       else p.prev.y = p.pos.y;
     }
+  }
+
+  if (frozen) for (const p of particles) p.prev.copy(p.pos);
+
+  /* ---- liquid: the shed particles are a full SPH fluid ---- */
+  if (FL.n > 0) {
+    rebuildFluidSolids(M, meltK);
+    fluidStep(dt, M);
   }
 }
 
@@ -561,23 +1614,53 @@ function syncHead() {
   _m4.makeBasis(_right, _up, _fwd);
   headGroup.quaternion.setFromRotationMatrix(_m4);
   headGroup.position.copy(P.head.pos);
+
+  const meltK = state.melt;
+  const base = MATS[state.material].radiusMul * 0.55 + 0.45;
+  const hk = meltK > 0 ? partAlpha(PART_ORDER.head, meltK) : 1;
+  headGroup.visible = hk > 0.02;
+  headGroup.scale.setScalar(base * hk * (1 - meltK * 0.18));
 }
 
 function syncJoints() {
-  for (const j of jointMeshes) j.mesh.position.copy(j.p.pos);
+  const meltK = state.melt;
+  const mul = MATS[state.material].radiusMul;
+  for (const j of jointMeshes) {
+    j.mesh.position.copy(j.p.pos);
+    const k = meltK > 0 ? partAlpha(j.order, meltK) : 1;
+    j.mesh.visible = k > 0.02;
+    if (j.mesh.visible) j.mesh.scale.copy(j.base).multiplyScalar(mul * k);
+  }
 }
 
 function syncBones() {
+  const M = MATS[state.material];
+  const thickness = M.boneThickness || 1.0;
+
+  const meltK = state.melt;
+
   for (const b of boneMeshes) {
+    _dir.copy(b.b.pos).sub(b.a.pos);
+    const len = _dir.length();
+    if (len < 1e-5) { b.mesh.visible = false; continue; }
+
+    const melted = meltK > 0 ? partAlpha(b.order, meltK) : 1;
+    b.mesh.visible = melted > 0.02 && len < b.restLen * 1.6;
+    if (!b.mesh.visible) continue;
+
     _mid.copy(b.a.pos).add(b.b.pos).multiplyScalar(0.5);
     b.mesh.position.copy(_mid);
 
-    _dir.copy(b.b.pos).sub(b.a.pos);
-    const len = _dir.length();
-    if (len < 1e-5) continue;
     _dir.divideScalar(len);
     b.mesh.quaternion.setFromUnitVectors(UP_VEC, _dir);
-    b.mesh.scale.set(1, len, 1);
+
+    /* --- volume-preserving squash & stretch ---
+       A compressed bone bulges out sideways, a stretched one thins.
+       Makes rubber (and melting slime) read as a soft squeezable mass. */
+    const stretch = len / b.restLen;
+    const squash = 1 / Math.sqrt(Math.max(0.35, stretch));
+    const th = thickness * squash * melted;
+    b.mesh.scale.set(th, len, th);
   }
 }
 
@@ -588,11 +1671,59 @@ function syncAll() {
 }
 
 /* =========================================================
+   MATERIAL APPLICATION
+   ========================================================= */
+const HINTS = {
+  plush:   'soft & floppy · drag him around · drag the void to orbit',
+  vase:    'EXTREME PORCELAIN · hair-trigger fracture · shatters into dust',
+  liquid:  `REAL FLUID SIM · he liquefies into ${FL.max} SPH particles · poke the puddle`,
+  balloon: 'buoyant · he floats up and bumps the sky',
+  rubber:  'EXTRA RUBBERY · nearly perfect bounce · squeezes & stretches',
+};
+
+function resetMelt() {
+  state.melt = 0;
+  state.meltTimer = 0;
+  fluidReset();
+}
+
+function setMaterial(id) {
+  state.material = id;
+  const M = MATS[id];
+
+  for (const t of colorTargets) {
+    const c = M.pal[t.key] !== undefined ? M.pal[t.key] : M.pal.body;
+    t.mat.uniforms.uColor.value.setHex(c);
+  }
+
+  for (const j of jointMeshes) j.mesh.scale.copy(j.base).multiplyScalar(M.radiusMul);
+  headGroup.scale.setScalar(M.radiusMul * 0.55 + 0.45);
+
+  if (M.breakStretch <= 0) {
+    for (const c of constraints) { c.broken = false; c.repairTimer = 0; }
+  }
+
+  // reset melt whenever we switch materials
+  resetMelt();
+
+  if (!cin.active) {
+    document.getElementById('title').innerHTML =
+      `RAGDOLL BUDDY <b>v2.4</b> <span>·</span> MATERIAL: <b>${id.toUpperCase()}</b><br>` +
+      `<span>${HINTS[id]}</span>`;
+  }
+
+  syncUI();
+}
+
+/* =========================================================
    INPUT
    ========================================================= */
 const raycaster = new THREE.Raycaster();
 const ndc = new THREE.Vector2();
 const grabPlane = new THREE.Plane();
+const fluidPlane = new THREE.Plane();
+const _fluidCentre = new THREE.Vector3();
+const magnetPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -2.5);
 const hitPoint = new THREE.Vector3();
 const camDir = new THREE.Vector3();
 
@@ -609,8 +1740,7 @@ function toBuffer(clientX, clientY) {
 }
 
 function findParticleNear(bx, by, maxDist) {
-  let best = null;
-  let bestD = maxDist;
+  let best = null, bestD = maxDist;
   const v = new THREE.Vector3();
   for (const p of particles) {
     v.copy(p.pos).project(camera);
@@ -624,9 +1754,31 @@ function findParticleNear(bx, by, maxDist) {
 
 canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
+  if (saver.active) { exitSaver(); return; }
+  if (cin.active) { endCinematic(); return; }
   canvas.setPointerCapture(e.pointerId);
 
   const { x, y } = toBuffer(e.clientX, e.clientY);
+
+  /* once he is mostly liquid there is no body left to grab — the pointer
+     becomes a finger that shoves the fluid around instead */
+  if (FL.n > 0 && state.melt > 0.35) {
+    ndc.x = (x / RES_W) * 2 - 1;
+    ndc.y = -(y / RES_H) * 2 + 1;
+    raycaster.setFromCamera(ndc, camera);
+    camera.getWorldDirection(camDir);
+    fluidPlane.setFromNormalAndCoplanarPoint(camDir, _fluidCentre.set(FL.cx, FL.cy, FL.cz));
+    if (raycaster.ray.intersectPlane(fluidPlane, hitPoint)) {
+      finger.on = true;
+      finger.x = hitPoint.x; finger.y = Math.max(FL.rad, hitPoint.y); finger.z = hitPoint.z;
+      finger.px = finger.x; finger.py = finger.y; finger.pz = finger.z;
+      finger.vx = finger.vy = finger.vz = 0;
+      canvas.classList.add('grabbing');
+      lastX = e.clientX; lastY = e.clientY;
+      return;
+    }
+  }
+
   const p = findParticleNear(x, y, 24);
 
   if (p) {
@@ -635,7 +1787,6 @@ canvas.addEventListener('pointerdown', (e) => {
     p._invMass = p.invMass;
     p.invMass = 0;
     canvas.classList.add('grabbing');
-
     camera.getWorldDirection(camDir);
     grabPlane.setFromNormalAndCoplanarPoint(camDir, p.pos);
   } else {
@@ -648,23 +1799,38 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 window.addEventListener('pointermove', (e) => {
-  if (!dragging && !orbiting) return;
+  const { x, y } = toBuffer(e.clientX, e.clientY);
+
+  ndc.x = (x / RES_W) * 2 - 1;
+  ndc.y = -(y / RES_H) * 2 + 1;
+  raycaster.setFromCamera(ndc, camera);
+  if (raycaster.ray.intersectPlane(magnetPlane, hitPoint)) {
+    if (!cin.active && !saver.active) magnetTarget.copy(hitPoint);
+  }
+
+  if (finger.on) {
+    raycaster.setFromCamera(ndc, camera);
+    if (raycaster.ray.intersectPlane(fluidPlane, hitPoint)) {
+      finger.x = hitPoint.x;
+      finger.y = Math.max(FL.rad, hitPoint.y);
+      finger.z = hitPoint.z;
+    }
+    lastX = e.clientX; lastY = e.clientY;
+    return;
+  }
+
+  if (cin.active || saver.active || (!dragging && !orbiting)) { lastX = e.clientX; lastY = e.clientY; return; }
 
   if (dragging) {
-    const { x, y } = toBuffer(e.clientX, e.clientY);
-    ndc.x = (x / RES_W) * 2 - 1;
-    ndc.y = -(y / RES_H) * 2 + 1;
     raycaster.setFromCamera(ndc, camera);
     if (raycaster.ray.intersectPlane(grabPlane, hitPoint)) {
       dragging.pos.copy(hitPoint);
-      // keep velocity coherent for the throw
       dragging.prev.lerp(dragging.pos, 0.85);
     }
   } else if (orbiting) {
     camState.theta -= (e.clientX - lastX) * 0.007;
     camState.phi -= (e.clientY - lastY) * 0.006;
     camState.phi = Math.max(0.35, Math.min(1.62, camState.phi));
-    updateCamera();
   }
 
   lastX = e.clientX;
@@ -672,6 +1838,7 @@ window.addEventListener('pointermove', (e) => {
 });
 
 function endPointer() {
+  finger.on = false;
   if (dragging) {
     dragging.invMass = dragging._invMass;
     dragging.grabbed = false;
@@ -684,7 +1851,7 @@ window.addEventListener('pointerup', endPointer);
 window.addEventListener('pointercancel', endPointer);
 
 /* =========================================================
-   UI ACTIONS
+   ACTIONS
    ========================================================= */
 function resetCreature(heightOffset = 0.35) {
   for (const name in defs) {
@@ -693,8 +1860,10 @@ function resetCreature(heightOffset = 0.35) {
     p.pos.set(d[0], d[1] + heightOffset, d[2]);
     p.prev.copy(p.pos);
   }
+  for (const c of constraints) { c.broken = false; c.repairTimer = 0; }
+  for (const s of shards) s.mesh.visible = false;
+  resetMelt();
 }
-resetCreature();
 
 function applyImpulse(vx, vy, vz) {
   for (const p of particles) {
@@ -704,28 +1873,664 @@ function applyImpulse(vx, vy, vz) {
   }
 }
 
-document.getElementById('btnReset').addEventListener('click', () => {
-  resetCreature(0.35);
-});
-
-document.getElementById('btnDrop').addEventListener('click', () => {
-  resetCreature(6.5);
-});
-
-document.getElementById('btnSpin').addEventListener('click', () => {
+function spinImpulse(swirl) {
   const ax = (Math.random() - 0.5) * 2;
   const az = (Math.random() - 0.5) * 2;
-  applyImpulse(ax * 0.35, 0.55 + Math.random() * 0.3, az * 0.35);
-  // a little twist
+  applyImpulse(ax * 0.32, 0.5 + Math.random() * 0.28, az * 0.32);
   for (const p of particles) {
     const rx = p.pos.x, rz = p.pos.z;
-    p.prev.x += rz * 0.012;
-    p.prev.z -= rx * 0.012;
+    p.prev.x += rz * swirl;
+    p.prev.z -= rx * swirl;
+  }
+}
+
+function clearStates() {
+  state.pose = false;
+  state.zeroG = false;
+  state.magnet = false;
+  state.wind = false;
+}
+
+/* =========================================================
+   UI
+   ========================================================= */
+const matRow = document.getElementById('matRow');
+const toolRow = document.getElementById('toolRow');
+const matButtons = {};
+const toolButtons = {};
+
+for (const m of MAT_LIST) {
+  const b = document.createElement('button');
+  b.innerHTML = `<i style="background:#${m.dot.toString(16).padStart(6, '0')}"></i>${m.label}`;
+  b.addEventListener('click', () => setMaterial(m.id));
+  matRow.appendChild(b);
+  matButtons[m.id] = b;
+}
+
+function addTool(id, label, onClick, isToggle) {
+  const b = document.createElement('button');
+  b.textContent = label;
+  b.addEventListener('click', () => { onClick(); syncUI(); });
+  toolRow.appendChild(b);
+  toolButtons[id] = b;
+  if (isToggle) b.dataset.toggle = '1';
+  return b;
+}
+
+addTool('reset', 'RESET', () => resetCreature(0.35), false);
+addTool('drop',  'DROP',  () => resetCreature(6.5), false);
+addTool('spin',  'SPIN',  () => spinImpulse(0.012), false);
+addTool('gust', 'GUST', () => {
+  const a = Math.random() * Math.PI * 2;
+  applyImpulse(Math.cos(a) * 0.34, 0.16, Math.sin(a) * 0.34);
+  shake = Math.max(shake, 0.10);
+}, false);
+addTool('pose', 'POSE', () => { state.pose = !state.pose; }, true);
+addTool('zeroG', 'ZERO-G', () => { state.zeroG = !state.zeroG; }, true);
+addTool('wind', 'WIND', () => { state.wind = !state.wind; }, true);
+addTool('magnet', 'MAGNET', () => { state.magnet = !state.magnet; }, true);
+addTool('saver', '\u25A0 SCREEN SAVER', () => startSaver(), false);
+
+function syncUI() {
+  for (const m of MAT_LIST) matButtons[m.id].classList.toggle('on', state.material === m.id);
+  toolButtons.pose.classList.toggle('on', state.pose);
+  toolButtons.zeroG.classList.toggle('on', state.zeroG);
+  toolButtons.wind.classList.toggle('on', state.wind);
+  toolButtons.magnet.classList.toggle('on', state.magnet);
+  magnetOrb.visible = state.magnet;
+  fieldRings.visible = state.magnet;
+}
+
+/* =========================================================
+   CINEMATIC DIRECTOR
+   ========================================================= */
+const cineEl = document.getElementById('cine');
+const cineTitleEl = document.getElementById('cineTitle');
+const cineTitleN = cineTitleEl.querySelector('.n');
+const cineTitleS = cineTitleEl.querySelector('.s');
+const cineBarFill = document.getElementById('cineBarFill');
+
+const cin = {
+  active: false,
+  index: 0,
+  time: 0,
+  blend: 0.8,
+  shotStart: null,
+  total: 0,
+};
+
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+
+const CINEMATIC = [
+  {
+    name: 'Subject 01 · Plush',
+    sub: 'baseline behaviour',
+    dur: 3.0, blend: 0,
+    cam: { theta: 0.40, phi: 1.22, radius: 11.0, target: V3(0, 1.9, 0) },
+    onEnter: () => { clearStates(); setMaterial('plush'); resetCreature(0.35); },
+    motion: (t, dt) => { camState.theta += 0.10 * dt; },
+  },
+  {
+    name: 'Facial Scan',
+    sub: 'plush · close inspection',
+    dur: 2.4, blend: 0.9,
+    cam: { theta: 0.62, phi: 1.45, radius: 4.6, target: V3(0, 2.95, 0) },
+    onEnter: () => {},
+    motion: (t, dt) => {
+      camState.theta += 0.06 * dt;
+      camState.target.y += Math.sin(t * 2.0) * 0.006;
+      camState.radius -= 0.22 * dt;
+    },
+  },
+  {
+    name: 'Impact Test · Rubber',
+    sub: 'torture 01 · EXTRA rubbery drop',
+    dur: 4.2, blend: 0.55,
+    cam: { theta: -0.55, phi: 1.42, radius: 8.2, target: V3(0, 1.5, 0) },
+    onEnter: () => { clearStates(); setMaterial('rubber'); resetCreature(8.2); shake = 0.14; },
+    motion: (t, dt) => {
+      const y = Math.max(P.chest.pos.y, 1.5);
+      camState.target.y += (y * 0.55 + 0.7 - camState.target.y) * Math.min(1, dt * 2.6);
+      camState.theta += 0.16 * dt;
+      // pull back a touch so we can watch it fly
+      if (t > 1.4) camState.radius += 0.25 * dt;
+    },
+  },
+  {
+    name: 'Shatter Test · Porcelain',
+    sub: 'torture 02 · guaranteed fracture',
+    dur: 4.0, blend: 0.45,
+    cam: { theta: 0.95, phi: 1.30, radius: 7.4, target: V3(0, 1.8, 0) },
+    onEnter: () => { clearStates(); setMaterial('vase'); resetCreature(8.2); },
+    motion: (t, dt) => {
+      const y = Math.max(P.chest.pos.y, 1.4);
+      camState.target.y += (y * 0.6 + 0.5 - camState.target.y) * Math.min(1, dt * 2.4);
+      camState.radius -= 0.16 * dt;
+      camState.theta += 0.13 * dt;
+    },
+  },
+  {
+    /* LIQUID — dropped from height, then we watch the body dissolve into
+       an actual SPH fluid and find its own level on the floor */
+    name: 'Liquefaction · Fluid',
+    sub: 'torture 03 · sph solver · density constraints',
+    dur: 9.5, blend: 0.6,
+    cam: { theta: -0.75, phi: 1.40, radius: 8.6, target: V3(0, 2.6, 0) },
+    onEnter: () => { clearStates(); setMaterial('liquid'); resetCreature(6.5); shake = 0.12; },
+    motion: (t, dt) => {
+      const y = Math.max(P.chest.pos.y, 0.7);
+      camState.target.y += (y * 0.5 + 0.4 - camState.target.y) * Math.min(1, dt * 2.0);
+
+      if (t < 1.4) {
+        // fall tracking
+        camState.theta -= 0.05 * dt;
+      } else if (t < 5.0) {
+        // orbit while the body sags and sheds
+        camState.theta -= 0.28 * dt;
+        camState.phi += 0.05 * dt;
+        if (camState.phi > 1.52) camState.phi = 1.52;
+      } else {
+        // slow dolly in on the puddle
+        camState.theta -= 0.06 * dt;
+        camState.radius -= 0.42 * dt;
+        if (camState.radius < 4.4) camState.radius = 4.4;
+        camState.target.y += (0.35 - camState.target.y) * Math.min(1, dt * 2.0);
+      }
+    },
+  },
+  {
+    name: 'Buoyancy Test · Balloon',
+    sub: 'torture 04 · anti-gravity',
+    dur: 3.4, blend: 0.8,
+    cam: { theta: 0.25, phi: 1.62, radius: 8.4, target: V3(0, 1.6, 0) },
+    onEnter: () => {
+      clearStates(); setMaterial('balloon'); resetCreature(0.6);
+      applyImpulse(0.02, 0.06, 0.01);
+    },
+    motion: (t, dt) => {
+      let top = 0;
+      for (const p of particles) if (p.pos.y > top) top = p.pos.y;
+      const want = Math.max(top * 0.72 + 1.0, 1.8);
+      camState.target.y += (want - camState.target.y) * Math.min(1, dt * 2.0);
+      camState.theta += 0.09 * dt;
+      camState.phi = 1.62;
+    },
+  },
+  {
+    name: 'Wind Tunnel',
+    sub: 'torture 05 · aero stress',
+    dur: 3.0, blend: 0.7,
+    cam: { theta: 0.0, phi: 1.24, radius: 9.0, target: V3(0, 1.9, 0) },
+    onEnter: () => {
+      clearStates(); setMaterial('plush'); resetCreature(2.4);
+      state.wind = true;
+      applyImpulse(0.05, 0.05, 0.05);
+    },
+    onExit: () => { state.wind = false; },
+    motion: (t, dt) => { camState.theta += 0.42 * dt; camState.radius -= 0.10 * dt; },
+  },
+  {
+    name: 'Tractor Beam',
+    sub: 'torture 06 · extreme magnetic pull',
+    dur: 4.0, blend: 0.7,
+    cam: { theta: -0.30, phi: 1.20, radius: 9.2, target: V3(0, 2.6, 0) },
+    onEnter: () => {
+      clearStates(); setMaterial('plush'); resetCreature(3.0);
+      state.magnet = true;
+      magnetTarget.set(2.2, 3.2, 0);
+    },
+    onExit: () => { state.magnet = false; },
+    motion: (t, dt) => {
+      const a = t * 1.85;
+      magnetTarget.set(Math.cos(a) * 2.6, 3.1 + Math.sin(t * 2.2) * 1.1, Math.sin(a) * 2.6);
+      camState.theta += 0.10 * dt;
+    },
+  },
+  {
+    name: 'Centrifuge',
+    sub: 'torture 07 · rapid rotation',
+    dur: 2.8, blend: 0.5,
+    cam: { theta: 0.0, phi: 1.16, radius: 8.4, target: V3(0, 2.0, 0) },
+    onEnter: () => {
+      clearStates(); setMaterial('rubber'); resetCreature(2.2);
+      applyImpulse(0.4, 0.45, 0.12);
+      for (const p of particles) {
+        const rx = p.pos.x, rz = p.pos.z;
+        p.prev.x += rz * 0.055;
+        p.prev.z -= rx * 0.055;
+      }
+      shake = 0.10;
+    },
+    motion: (t, dt) => { camState.theta += 0.85 * dt; camState.radius -= 0.30 * dt; },
+  },
+  {
+    name: 'Zero Gravity',
+    sub: 'finale · free float',
+    dur: 4.0, blend: 1.1,
+    cam: { theta: 0.40, phi: 1.15, radius: 10.0, target: V3(0, 2.6, 0) },
+    onEnter: () => {
+      clearStates(); setMaterial('plush'); resetCreature(3.0);
+      state.zeroG = true;
+      applyImpulse(0.06, 0.10, 0.06);
+    },
+    onExit: () => { state.zeroG = false; },
+    motion: (t, dt) => {
+      camState.theta += 0.17 * dt;
+      camState.radius -= 0.18 * dt;
+      camState.target.y = 2.6 + Math.sin(t * 0.9) * 0.25;
+    },
+  },
+];
+
+const EASE = (u) => u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+
+function lerpCam(a, b, u) {
+  return {
+    theta: a.theta + (b.theta - a.theta) * u,
+    phi: a.phi + (b.phi - a.phi) * u,
+    radius: a.radius + (b.radius - a.radius) * u,
+    target: new THREE.Vector3().lerpVectors(a.target, b.target, u),
+  };
+}
+
+function showShotTitle(s) {
+  cineTitleN.textContent = s.name;
+  cineTitleS.textContent = s.sub || '';
+  cineTitleEl.style.opacity = 0;
+  cineTitleEl.style.transform = 'translateY(8px)';
+  requestAnimationFrame(() => {
+    cineTitleEl.style.transition = 'opacity .5s ease, transform .5s ease';
+    cineTitleEl.style.opacity = 1;
+    cineTitleEl.style.transform = 'translateY(0)';
+  });
+}
+
+function enterShot(i) {
+  const s = CINEMATIC[i];
+  cin.shotStart = {
+    theta: camState.theta,
+    phi: camState.phi,
+    radius: camState.radius,
+    target: camState.target.clone(),
+  };
+  cin.blend = s.blend !== undefined ? s.blend : 0.8;
+  cin.time = 0;
+  if (s.onEnter) s.onEnter();
+  showShotTitle(s);
+  syncUI();
+}
+
+function startCinematic() {
+  cin.active = true;
+  cin.index = 0;
+  cin.time = 0;
+  cin.total = CINEMATIC.reduce((a, s) => a + s.dur, 0);
+
+  document.getElementById('ui').classList.add('hidden');
+  document.getElementById('title').classList.add('hidden');
+  cineEl.classList.add('on');
+  cineTitleEl.style.transition = 'none';
+  cineTitleEl.style.opacity = 0;
+
+  const s = CINEMATIC[0];
+  camState.theta = s.cam.theta;
+  camState.phi = s.cam.phi;
+  camState.radius = s.cam.radius;
+  camState.target.copy(s.cam.target);
+
+  enterShot(0);
+}
+
+function endCinematic() {
+  if (!cin.active) return;
+  const s = CINEMATIC[cin.index];
+  if (s && s.onExit) s.onExit();
+  cin.active = false;
+
+  clearStates();
+  setMaterial('plush');
+  resetCreature(0.35);
+
+  cineEl.classList.remove('on');
+  document.getElementById('ui').classList.remove('hidden');
+  document.getElementById('title').classList.remove('hidden');
+
+  document.getElementById('title').innerHTML =
+    `RAGDOLL BUDDY <b>v2.4</b> <span>·</span> MATERIAL LAB<br>` +
+    `<span>drag him · drag the void to orbit · pick a material below</span>`;
+
+  syncUI();
+}
+
+function updateCinematic(dt) {
+  if (!cin.active) return;
+
+  const s = CINEMATIC[cin.index];
+  cin.time += dt;
+
+  if (cin.time >= s.dur) {
+    if (s.onExit) s.onExit();
+    const next = cin.index + 1;
+    if (next >= CINEMATIC.length) { endCinematic(); return; }
+    cin.index = next;
+    enterShot(cin.index);
+    return;
+  }
+
+  const u = cin.blend > 0.0001 ? Math.min(1, cin.time / cin.blend) : 1;
+  const e = EASE(u);
+  const c = lerpCam(cin.shotStart, s.cam, e);
+
+  camState.theta = c.theta;
+  camState.phi = c.phi;
+  camState.radius = c.radius;
+  camState.target.copy(c.target);
+
+  if (s.motion) s.motion(cin.time, dt, s.dur);
+
+  let elapsed = 0;
+  for (let i = 0; i < cin.index; i++) elapsed += CINEMATIC[i].dur;
+  elapsed += cin.time;
+  cineBarFill.style.width = ((elapsed / cin.total) * 100).toFixed(1) + '%';
+}
+
+document.getElementById('cineSkip').addEventListener('click', endCinematic);
+window.addEventListener('keydown', (e) => {
+  if (cin.active && (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter')) {
+    e.preventDefault();
+    endCinematic();
   }
 });
 
 /* =========================================================
-   RESIZE (pixel-perfect upscale of the 320x240 buffer)
+   SCREEN SAVER
+   An endless, self-directing show: shuffled scenes, randomised
+   framing, slow drifting camera, fades across the cuts. Any input
+   wakes it, and it arms itself again after IDLE_MS of stillness.
+   ========================================================= */
+const IDLE_MS = 90000;
+
+const saverFadeEl = document.getElementById('saverFade');
+const saverTagEl  = document.getElementById('saverTag');
+const saverTagN   = saverTagEl.querySelector('.n');
+const saverTagS   = saverTagEl.querySelector('.s');
+
+const saver = {
+  active: false,
+  phase: 'in',        // 'in' | 'run' | 'out'
+  fade: 1,
+  time: 0,
+  dur: 0,
+  scene: null,
+  mem: {},            // per-scene scratch, for mid-shot beats
+  bag: [],
+  last: -1,
+  drift: 0,
+  guard: 0,           // swallow wake events right after it starts
+  moved: 0,
+};
+
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+const SAVER_SCENES = [
+  {
+    n: 'liquefaction', s: 'sph fluid · density constraints',
+    dur: [16, 20],
+    enter: () => { clearStates(); setMaterial('liquid'); resetCreature(rnd(4.5, 7.5)); shake = 0.12; },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: 1.36, radius: 9.6, target: V3(0, 2.6, 0) }),
+    motion: (t, dt) => {
+      camState.theta += 0.16 * dt;
+      const wantY = t < 2.4 ? 2.3 : 0.55;
+      camState.target.y += (wantY - camState.target.y) * Math.min(1, dt * 1.1);
+      if (t > 6.5) {
+        camState.radius += (5.3 - camState.radius) * Math.min(1, dt * 0.35);
+        camState.phi   += (1.50 - camState.phi)   * Math.min(1, dt * 0.35);
+      }
+    },
+  },
+  {
+    n: 'tractor beam', s: 'fluid under magnetic capture',
+    dur: [14, 18],
+    enter: () => {
+      clearStates(); setMaterial('liquid'); resetCreature(1.2);
+      state.magnet = true; magnetTarget.set(0, 3.4, 0); syncUI();
+    },
+    exit: () => { state.magnet = false; syncUI(); },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: 1.24, radius: 9.0, target: V3(0, 3.0, 0) }),
+    motion: (t, dt) => {
+      const a = t * 0.85;
+      magnetTarget.set(Math.cos(a) * 1.9, 3.2 + Math.sin(t * 1.3) * 0.9, Math.sin(a) * 1.9);
+      camState.theta += 0.13 * dt;
+      camState.target.y += (3.1 - camState.target.y) * Math.min(1, dt * 0.8);
+      camState.radius += (7.4 - camState.radius) * Math.min(1, dt * 0.25);
+    },
+  },
+  {
+    n: 'free fall', s: 'liquid · zero gravity',
+    dur: [13, 16],
+    enter: () => {
+      clearStates(); setMaterial('liquid'); resetCreature(2.8);
+      state.zeroG = true; applyImpulse(0.05, 0.04, 0.03);
+    },
+    exit: () => { state.zeroG = false; },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: 1.18, radius: 8.6, target: V3(0, 3.0, 0) }),
+    motion: (t, dt) => {
+      camState.theta += 0.22 * dt;
+      camState.phi = 1.18 + Math.sin(t * 0.35) * 0.16;
+      const wantY = FL.n > 40 ? FL.cy : 2.8;
+      camState.target.y += (wantY - camState.target.y) * Math.min(1, dt * 0.9);
+      camState.radius += (6.6 - camState.radius) * Math.min(1, dt * 0.2);
+    },
+  },
+  {
+    n: 'shatter test', s: 'porcelain · terminal fracture',
+    dur: [11, 14],
+    enter: () => { clearStates(); setMaterial('vase'); resetCreature(rnd(6.5, 9.5)); },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: 1.32, radius: 8.2, target: V3(0, 3.0, 0) }),
+    motion: (t, dt, mem) => {
+      const y = Math.max(P.chest.pos.y, 1.2);
+      camState.target.y += (y * 0.55 + 0.5 - camState.target.y) * Math.min(1, dt * 2.2);
+      camState.theta += 0.16 * dt;
+      camState.radius += (6.4 - camState.radius) * Math.min(1, dt * 0.25);
+      if (t > 6.4 && !mem.again) { mem.again = 1; resetCreature(rnd(7, 10)); }
+    },
+  },
+  {
+    n: 'impact test', s: 'rubber · elastic return',
+    dur: [12, 15],
+    enter: () => { clearStates(); setMaterial('rubber'); resetCreature(rnd(7, 11)); shake = 0.12; },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: 1.42, radius: 8.6, target: V3(0, 2.0, 0) }),
+    motion: (t, dt, mem) => {
+      const y = Math.max(P.chest.pos.y, 1.4);
+      camState.target.y += (y * 0.55 + 0.6 - camState.target.y) * Math.min(1, dt * 2.4);
+      camState.theta += 0.20 * dt;
+      if (t > 7 && !mem.kick) { mem.kick = 1; applyImpulse(rnd(-0.3, 0.3), 0.55, rnd(-0.3, 0.3)); }
+    },
+  },
+  {
+    n: 'buoyancy', s: 'balloon · negative gravity',
+    dur: [11, 14],
+    enter: () => { clearStates(); setMaterial('balloon'); resetCreature(0.6); applyImpulse(0.02, 0.05, 0.01); },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: 1.60, radius: 8.6, target: V3(0, 1.6, 0) }),
+    motion: (t, dt) => {
+      let top = 0;
+      for (const p of particles) if (p.pos.y > top) top = p.pos.y;
+      camState.target.y += (Math.max(top * 0.72 + 0.9, 1.8) - camState.target.y) * Math.min(1, dt * 1.6);
+      camState.theta += 0.12 * dt;
+      camState.phi = 1.60;
+    },
+  },
+  {
+    n: 'wind tunnel', s: 'plush · aero stress',
+    dur: [11, 14],
+    enter: () => { clearStates(); setMaterial('plush'); resetCreature(2.2); state.wind = true; syncUI(); },
+    exit: () => { state.wind = false; syncUI(); },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: 1.26, radius: 9.2, target: V3(0, 1.9, 0) }),
+    motion: (t, dt) => {
+      camState.theta += 0.34 * dt;
+      camState.radius += (7.2 - camState.radius) * Math.min(1, dt * 0.2);
+    },
+  },
+  {
+    n: 'centrifuge', s: 'rubber · rapid rotation',
+    dur: [10, 13],
+    enter: () => { clearStates(); setMaterial('rubber'); resetCreature(2.4); spinImpulse(0.055); shake = 0.10; },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: 1.16, radius: 8.8, target: V3(0, 2.0, 0) }),
+    motion: (t, dt, mem) => {
+      camState.theta += 0.72 * dt;
+      camState.radius += (6.8 - camState.radius) * Math.min(1, dt * 0.25);
+      if (t > 5.5 && !mem.again) { mem.again = 1; spinImpulse(0.05); }
+    },
+  },
+  {
+    n: 'subject 01', s: 'plush · baseline behaviour',
+    dur: [12, 15],
+    enter: () => { clearStates(); setMaterial('plush'); resetCreature(rnd(0.4, 3.0)); },
+    cam: () => ({ theta: rnd(-3.1, 3.1), phi: rnd(1.15, 1.40), radius: 10.5, target: V3(0, 2.0, 0) }),
+    motion: (t, dt, mem) => {
+      camState.theta += 0.10 * dt;
+      camState.radius += (6.0 - camState.radius) * Math.min(1, dt * 0.12);
+      camState.target.y += (1.6 - camState.target.y) * Math.min(1, dt * 0.6);
+      if (t > 6 && !mem.poke) { mem.poke = 1; applyImpulse(rnd(-0.25, 0.25), 0.32, rnd(-0.25, 0.25)); }
+    },
+  },
+];
+
+function nextSaverScene() {
+  if (saver.scene && saver.scene.exit) saver.scene.exit();
+
+  if (saver.bag.length === 0) {
+    saver.bag = SAVER_SCENES.map((_, i) => i);
+    for (let i = saver.bag.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      const tmp = saver.bag[i]; saver.bag[i] = saver.bag[j]; saver.bag[j] = tmp;
+    }
+    if (saver.bag.length > 1 && saver.bag[0] === saver.last) {
+      const tmp = saver.bag[0]; saver.bag[0] = saver.bag[1]; saver.bag[1] = tmp;
+    }
+  }
+
+  const idx = saver.bag.shift();
+  const s = SAVER_SCENES[idx];
+  saver.last = idx;
+  saver.scene = s;
+  saver.mem = {};
+  saver.time = 0;
+  saver.dur = rnd(s.dur[0], s.dur[1]);
+  saver.phase = 'in';
+
+  s.enter();
+
+  const c = s.cam();
+  camState.theta = c.theta;
+  camState.phi = c.phi;
+  camState.radius = c.radius;
+  camState.target.copy(c.target);
+
+  saverTagN.textContent = s.n;
+  saverTagS.textContent = s.s;
+}
+
+function startSaver() {
+  if (saver.active) return;
+  if (cin.active) endCinematic();
+
+  saver.active = true;
+  saver.fade = 1;
+  saver.guard = 1.2;
+  saver.moved = 0;
+  saver.bag.length = 0;
+  saver.last = -1;
+  saver.scene = null;
+  saver.drift = Math.random() * 120;
+  wakeX = null;
+
+  document.body.classList.add('saver');
+  document.getElementById('ui').classList.add('hidden');
+  document.getElementById('title').classList.add('hidden');
+  saverFadeEl.style.opacity = '1';
+  saverTagEl.classList.add('on');
+
+  nextSaverScene();
+}
+
+function exitSaver() {
+  if (!saver.active) return;
+  if (saver.scene && saver.scene.exit) saver.scene.exit();
+
+  saver.active = false;
+  saver.scene = null;
+
+  document.body.classList.remove('saver');
+  saverTagEl.classList.remove('on');
+  saverFadeEl.style.opacity = '0';
+  document.getElementById('ui').classList.remove('hidden');
+  document.getElementById('title').classList.remove('hidden');
+
+  clearStates();
+  syncUI();
+  lastInput = performance.now();
+}
+
+function updateSaver(dt) {
+  if (!saver.active) return;
+
+  if (saver.guard > 0) saver.guard -= dt;
+  saver.time += dt;
+
+  if (saver.phase === 'in') {
+    saver.fade -= dt / 0.8;
+    if (saver.fade <= 0) { saver.fade = 0; saver.phase = 'run'; }
+  } else if (saver.phase === 'run') {
+    if (saver.time >= saver.dur - 0.8) saver.phase = 'out';
+  } else {
+    saver.fade += dt / 0.8;
+    if (saver.fade >= 1) { saver.fade = 1; nextSaverScene(); }
+  }
+
+  if (saver.scene && saver.scene.motion) saver.scene.motion(saver.time, dt, saver.mem);
+
+  saverFadeEl.style.opacity = saver.fade.toFixed(3);
+
+  /* the caption wanders so nothing is ever burnt into one spot */
+  saver.drift += dt;
+  const mx = 28, my = 28;
+  const w = Math.max(0, window.innerWidth  - mx * 2 - 250);
+  const h = Math.max(0, window.innerHeight - my * 2 - 70);
+  const x = mx + (Math.sin(saver.drift * 0.081) * 0.5 + 0.5) * w;
+  const y = my + (Math.sin(saver.drift * 0.053 + 1.7) * 0.5 + 0.5) * h;
+  saverTagEl.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px)';
+}
+
+/* ---- waking up / idle arming ---- */
+let lastInput = performance.now();
+let wakeX = null, wakeY = null;
+
+function noteInput() { lastInput = performance.now(); }
+
+function wake() {
+  noteInput();
+  if (!saver.active || saver.guard > 0) return;
+  exitSaver();
+}
+
+window.addEventListener('pointerdown', wake);
+window.addEventListener('keydown', wake);
+window.addEventListener('wheel', wake, { passive: true });
+window.addEventListener('touchstart', wake, { passive: true });
+window.addEventListener('pointermove', (e) => {
+  noteInput();
+  if (!saver.active || saver.guard > 0 || wakeX === null) {
+    wakeX = e.clientX; wakeY = e.clientY;
+    return;
+  }
+  saver.moved += Math.abs(e.clientX - wakeX) + Math.abs(e.clientY - wakeY);
+  wakeX = e.clientX; wakeY = e.clientY;
+  if (saver.moved > 16) exitSaver();
+});
+
+/* =========================================================
+   RESIZE
    ========================================================= */
 function resize() {
   const aspect = RES_W / RES_H;
@@ -754,6 +2559,23 @@ function loop(now) {
   lastTime = now;
   if (dt > 0.25) dt = 0.25;
 
+  updateCinematic(dt);
+  updateSaver(dt);
+
+  /* pointer velocity, so shoving the puddle actually throws it */
+  if (finger.on) {
+    const k = 1 / Math.max(dt, 0.008);
+    finger.vx = (finger.x - finger.px) * k;
+    finger.vy = (finger.y - finger.py) * k;
+    finger.vz = (finger.z - finger.pz) * k;
+    const sp2 = finger.vx * finger.vx + finger.vy * finger.vy + finger.vz * finger.vz;
+    if (sp2 > 900) {
+      const s = 30 / Math.sqrt(sp2);
+      finger.vx *= s; finger.vy *= s; finger.vz *= s;
+    }
+    finger.px = finger.x; finger.py = finger.y; finger.pz = finger.z;
+  }
+
   accumulator += dt;
   let steps = 0;
   while (accumulator >= FIXED_DT && steps < 5) {
@@ -763,11 +2585,48 @@ function loop(now) {
   }
   if (steps === 5) accumulator = 0;
 
+  updateShards(Math.min(dt, 0.05));
+  fluidRender();
+
+  if (shake > 0.0005) shake *= Math.pow(0.0025, dt);
+  else shake = 0;
+
+  if (state.magnet) {
+    magnetOrb.position.copy(magnetTarget);
+    magnetOrb.rotation.y += dt * 2.2;
+    magnetOrb.rotation.x += dt * 1.1;
+    magnetOrb.scale.setScalar(1 + Math.sin(now * 0.008) * 0.22);
+
+    fieldRings.position.copy(magnetTarget);
+    fieldRings.rotation.y += dt * 1.6;
+    fieldRings.rotation.z += dt * 0.9;
+    for (let i = 0; i < ringMeshes.length; i++) {
+      const r = ringMeshes[i];
+      const t = (now * 0.0016 + i * 0.33) % 1;
+      const scale = 0.4 + t * 3.6;
+      r.scale.setScalar(scale);
+      r.material.uniforms.uAlpha.value = (1 - t) * 0.55;
+    }
+  }
+
+  if (!saver.active && !cin.active && !dragging && !orbiting && !finger.on &&
+      now - lastInput > IDLE_MS) startSaver();
+
+  updateCamera();
   syncAll();
   renderer.render(scene, camera);
 }
 
+/* =========================================================
+   BOOT
+   ========================================================= */
+setMaterial('plush');
+resetCreature(0.35);
 syncAll();
+syncUI();
+
+setTimeout(() => { startCinematic(); }, 700);
+
 requestAnimationFrame(loop);
 </script>
 </body>
