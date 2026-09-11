@@ -39,6 +39,8 @@ import { startSaver, updateSaver, IDLE_MS, idle } from './show/saver.js';
 import { pointer } from './ui/pointer.js';
 import { tickInspect } from './dev/inspect.js';
 import { finger } from './physics/fluid.js';
+import { updateCrosshair } from './ui/crosshair.js';
+import { initHUD } from './ui/hud.js';
 
 /* =========================================================
    FRAME LOOP
@@ -61,6 +63,7 @@ function loop(now) {
   updateIntent();
   updateTools(dt);
   updateExplosions(dt);
+  updateCrosshair();
 
   accumulator += dt;
   let steps = 0;
@@ -90,6 +93,7 @@ function loop(now) {
    BOOT
    ========================================================= */
 buildPanel();
+initHUD();
 setMaterial('plush');
 resetCreature(0.35);
 syncAll();
