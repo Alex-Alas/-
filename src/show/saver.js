@@ -14,6 +14,7 @@ import { sim, resetToggles, magnetTarget } from '../physics/sim.js';
 import { FL } from '../physics/fluid.js';
 import { P, setMaterial, resetCreature, applyImpulse, spinImpulse } from '../entities/buddy/index.js';
 import { syncPanel } from '../ui/panel.js';
+import { setPlayMode } from '../ui/controls.js';
 
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 
@@ -198,10 +199,14 @@ function nextSaverScene() {
   saverTagS.textContent = s.s;
 }
 
+let resumePlay = false;
+
 export function startSaver() {
   if (app.saver) return;
   if (cin.active) endCinematic();
 
+  resumePlay = app.play;
+  if (app.play) setPlayMode(false);
   app.saver = true;
   saver.fade = 1;
   saver.guard = 1.2;
@@ -222,6 +227,7 @@ export function startSaver() {
 }
 
 export function exitSaver() {
+  if (app.saver && resumePlay) setPlayMode(true);
   if (!app.saver) return;
   if (saver.scene && saver.scene.exit) saver.scene.exit();
 

@@ -12,6 +12,7 @@ import { sim, resetToggles, magnetTarget } from '../physics/sim.js';
 import { FL } from '../physics/fluid.js';
 import { P, setMaterial, resetCreature, applyImpulse, spinImpulse } from '../entities/buddy/index.js';
 import { syncPanel } from '../ui/panel.js';
+import { setPlayMode, KeyActions, inPlay } from '../ui/controls.js';
 
 const cineEl = document.getElementById('cine');
 const cineTitleEl = document.getElementById('cineTitle');
@@ -228,7 +229,11 @@ function enterShot(i) {
   syncPanel();
 }
 
+let resumePlay = false;
+
 export function startCinematic() {
+  resumePlay = app.play;
+  if (app.play) setPlayMode(false);
   app.cinematic = true;
   cin.index = 0;
   cin.time = 0;
@@ -262,6 +267,7 @@ export function endCinematic() {
   cineEl.classList.remove('on');
   document.getElementById('ui').classList.remove('hidden');
   document.getElementById('title').classList.remove('hidden');
+  if (resumePlay) setPlayMode(true);
 
   document.getElementById('title').innerHTML =
     `RAGDOLL BUDDY <b>v2.4</b> <span>·</span> MATERIAL LAB<br>` +
@@ -311,3 +317,8 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+
+KeyActions.register({
+  id: 'cinematic', code: 'KeyP', label: 'P', hint: 'play the cinematic reel',
+  down: () => { if (!app.cinematic) startCinematic(); },
+});

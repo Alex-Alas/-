@@ -12,17 +12,21 @@ import { renderer, view } from './render/renderer.js';
 import { scene } from './render/scene.js';
 import { camera, updateCamera, decayShake } from './camera/rig.js';
 import './camera/modes/orbit.js';
+import './camera/modes/first.js';
+import './camera/modes/third.js';
 
-import { updateWind } from './physics/sim.js';
-import { stepRigid, syncBodyMeshes, pushBodySolids, collideParticleWithBodies } from './physics/world.js';
+import { syncBodyMeshes } from './physics/world.js';
+import { stepWorld, FIXED_DT } from './physics/step.js';
 import './entities/level.js';
 import './entities/props.js';
+import { respawnPlayer } from './entities/player.js';
 import { updateShards } from './physics/debris.js';
-import { FL, fluidStep, fluidRender, clearSolids, updateFinger } from './physics/fluid.js';
-import { stepBuddy, syncAll, setMaterial, resetCreature, matDef, buddy, particles } from './entities/buddy/index.js';
+import { fluidRender, updateFinger } from './physics/fluid.js';
+import { syncAll, setMaterial, resetCreature } from './entities/buddy/index.js';
 import { updateMagnetVisuals } from './entities/magnet.js';
 
 import './ui/input.js';
+import { updateIntent, setPlayMode } from './ui/controls.js';
 import { buildPanel } from './ui/panel.js';
 import { startCinematic, updateCinematic } from './show/cinematic.js';
 import { startSaver, updateSaver, IDLE_MS, idle } from './show/saver.js';
@@ -31,33 +35,11 @@ import { tickInspect } from './dev/inspect.js';
 import { finger } from './physics/fluid.js';
 
 /* =========================================================
-   FIXED-STEP WORLD
+   FRAME LOOP
    ========================================================= */
-const FIXED_DT = 1 / 60;
 const MAX_STEPS = 5;
 let accumulator = 0;
 let lastTime = performance.now();
-
-function stepWorld(dt) {
-  const M = matDef(buddy.material);
-
-  updateWind(dt);
-  clearSolids();          // obstacle list for the fluid, rebuilt by its owners
-
-  stepRigid(dt);
-  stepBuddy(dt);
-
-  /* the ragdoll is pushed around by the props, and pushes back */
-  for (const p of particles) {
-    if (p.grabbed) continue;
-    collideParticleWithBodies(p, p.radius * M.radiusMul, p.invMass > 0 ? 1 / p.invMass : 1, dt);
-  }
-
-  if (FL.n > 0) {
-    pushBodySolids();
-    fluidStep(dt, M.gravityMul);
-  }
-}
 
 function loop(now) {
   requestAnimationFrame(loop);
@@ -70,6 +52,7 @@ function loop(now) {
   updateCinematic(dt);
   updateSaver(dt);
   updateFinger(dt);
+  updateIntent();
 
   accumulator += dt;
   let steps = 0;
@@ -102,6 +85,8 @@ setMaterial('plush');
 resetCreature(0.35);
 syncAll();
 
-setTimeout(() => { startCinematic(); }, 700);
+/* Straight into the sandbox. The reel is still there on P. */
+respawnPlayer();
+setPlayMode(true, 'third');
 
 requestAnimationFrame(loop);

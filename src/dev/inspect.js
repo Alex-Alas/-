@@ -7,10 +7,13 @@
 import { bodies, contacts, raycast, solverConfig } from '../physics/world.js';
 import { Props, spawnProp } from '../entities/props.js';
 import { FL } from '../physics/fluid.js';
+import { advance } from '../physics/step.js';
 import { sim } from '../physics/sim.js';
 import { app } from '../core/app.js';
 import { camera, camState, rig } from '../camera/rig.js';
 import { buddy, particles } from '../entities/buddy/index.js';
+import { player, respawnPlayer } from '../entities/player.js';
+import { setPlayMode, KeyActions, keys } from '../ui/controls.js';
 
 let frames = 0, fpsWindow = performance.now(), fps = 0;
 
@@ -26,7 +29,10 @@ export function tickInspect() {
 
 window.__sandbox = {
   bodies, contacts, particles, FL, sim, app, camera, camState, rig, buddy, solverConfig,
-  Props, spawnProp, raycast,
+  Props, spawnProp, raycast, player, respawnPlayer, setPlayMode, KeyActions, keys,
+
+  /** Advance the physics without waiting for frames — fps-independent tests. */
+  advance,
 
   health() {
     const dyn = bodies.filter(b => !b.isStatic);
@@ -49,6 +55,9 @@ window.__sandbox = {
       energy: +energy.toFixed(1),
       fluid: FL.n,
       cameraMode: rig.mode,
+      play: app.play,
+      playerPos: player.pos.toArray().map(v => +v.toFixed(2)),
+      onGround: player.onGround,
       material: buddy.material,
       cinematic: app.cinematic,
       saver: app.saver,

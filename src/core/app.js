@@ -6,6 +6,7 @@
    cycles start).
    ========================================================= */
 export const app = {
+  play: true,         // the player owns the camera and the mouse aims
   cinematic: false,   // the scripted reel owns the camera
   saver: false,       // the screensaver owns the camera
   timeScale: 1,       // slow motion

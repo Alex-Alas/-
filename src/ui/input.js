@@ -48,6 +48,7 @@ export function findParticleNear(bx, by, maxDist) {
 }
 
 canvas.addEventListener('pointerdown', (e) => {
+  if (app.play) return;              // playing: the mouse aims, it does not grab
   e.preventDefault();
   if (app.saver) { events.emit('saver:wake'); return; }
   if (app.cinematic) { events.emit('cinematic:skip'); return; }
@@ -94,6 +95,7 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 window.addEventListener('pointermove', (e) => {
+  if (app.play) return;
   const { x, y } = toBuffer(e.clientX, e.clientY);
 
   ndc.x = (x / view.w) * 2 - 1;
