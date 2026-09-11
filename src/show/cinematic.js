@@ -9,10 +9,9 @@ import { app } from '../core/app.js';
 import { events } from '../core/events.js';
 import { camState, setShake } from '../camera/rig.js';
 import { sim, resetToggles, magnetTarget } from '../physics/sim.js';
-import { FL } from '../physics/fluid.js';
-import { P, setMaterial, resetCreature, applyImpulse, spinImpulse } from '../entities/buddy/index.js';
+import { P, particles, setMaterial, resetCreature, applyImpulse } from '../entities/buddy/index.js';
 import { syncPanel } from '../ui/panel.js';
-import { setPlayMode, KeyActions, inPlay } from '../ui/controls.js';
+import { setPlayMode, KeyActions } from '../ui/controls.js';
 
 const cineEl = document.getElementById('cine');
 const cineTitleEl = document.getElementById('cineTitle');
@@ -30,7 +29,7 @@ const cin = {
 
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 
-const CINEMATIC = [
+export const CINEMATIC = [
   {
     name: 'Subject 01 · Plush',
     sub: 'baseline behaviour',

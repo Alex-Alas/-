@@ -12,9 +12,10 @@ import { rnd } from '../core/math.js';
 import { camState, setShake } from '../camera/rig.js';
 import { sim, resetToggles, magnetTarget } from '../physics/sim.js';
 import { FL } from '../physics/fluid.js';
-import { P, setMaterial, resetCreature, applyImpulse, spinImpulse } from '../entities/buddy/index.js';
+import { P, particles, setMaterial, resetCreature, applyImpulse, spinImpulse } from '../entities/buddy/index.js';
 import { syncPanel } from '../ui/panel.js';
 import { setPlayMode } from '../ui/controls.js';
+import { endCinematic } from './cinematic.js';
 
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 
@@ -40,7 +41,7 @@ const saver = {
 };
 
 
-const SAVER_SCENES = [
+export const SAVER_SCENES = [
   {
     n: 'liquefaction', s: 'sph fluid · density constraints',
     dur: [16, 20],
@@ -201,9 +202,11 @@ function nextSaverScene() {
 
 let resumePlay = false;
 
+events.on('saver:start', () => startSaver());
+
 export function startSaver() {
   if (app.saver) return;
-  if (cin.active) endCinematic();
+  if (app.cinematic) endCinematic();
 
   resumePlay = app.play;
   if (app.play) setPlayMode(false);

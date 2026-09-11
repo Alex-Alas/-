@@ -15,7 +15,7 @@
 import * as THREE from 'three';
 import { events } from '../core/events.js';
 import { sim, gravityFor, wind } from './sim.js';
-import { colliders, BOUNDS } from './statics.js';
+import { BOUNDS } from './statics.js';
 import { RigidBody, SHAPE } from './rigidbody.js';
 import { collidePair, groundContacts, resetContacts } from './collide.js';
 import { FL, addSolid } from './fluid.js';
@@ -32,8 +32,6 @@ export const solverConfig = {
   beta: 0.28,
   slop: 0.012,
 };
-const SLOP = solverConfig.slop;
-const BETA = solverConfig.beta;
 const REST_THRESHOLD = 2.2;      // below this approach speed nothing bounces
 const SLEEP_LIN = 0.10;
 const SLEEP_ANG = 0.14;

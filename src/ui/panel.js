@@ -25,6 +25,8 @@ PanelActions.register({ id: 'pose',   order: 4, label: 'POSE',   toggle: true, i
 PanelActions.register({ id: 'zeroG',  order: 5, label: 'ZERO-G', toggle: true, isOn: () => sim.zeroG,  run: () => { sim.zeroG = !sim.zeroG; } });
 PanelActions.register({ id: 'wind',   order: 6, label: 'WIND',   toggle: true, isOn: () => sim.wind,   run: () => { sim.wind = !sim.wind; } });
 PanelActions.register({ id: 'magnet', order: 7, label: 'MAGNET', toggle: true, isOn: () => sim.magnet, run: () => { sim.magnet = !sim.magnet; } });
+/* Asked for by event: the panel and the screen saver stay unaware of each other. */
+PanelActions.register({ id: 'saver', order: 8, label: '\u25A0 SCREEN SAVER', run: () => events.emit('saver:start') });
 
 const matRow = document.getElementById('matRow');
 const toolRow = document.getElementById('toolRow');

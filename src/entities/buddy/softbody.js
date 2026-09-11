@@ -6,7 +6,7 @@
    world (physics/world.js) and the two are coupled through contacts.
    ========================================================= */
 import * as THREE from 'three';
-import { GRAVITY, ITERATIONS_CAP, RESTITUTION_MIN, sim, wind, magnetTarget, gravityFor } from '../../physics/sim.js';
+import { ITERATIONS_CAP, RESTITUTION_MIN, sim, wind, magnetTarget, gravityFor } from '../../physics/sim.js';
 import { colliders } from '../../physics/statics.js';
 import { spawnShards } from '../../physics/debris.js';
 import { FL, fluidSpawn, addSolid } from '../../physics/fluid.js';
@@ -191,7 +191,6 @@ export function stepBuddy(dt) {
   const dampingNow     = Math.max(0.90, M.damping - meltK * 0.035);
   const frictionNow    = M.friction   * (1 - meltK * 0.68);
   const gravityNow     = M.gravityMul * (1 + meltK * 0.45);
-  const radiusNow      = M.radiusMul  * (1 + meltK * 0.55);
   const cohesionNow    = M.cohesion   * (1 - meltK * 0.78);
 
   const g = frozen ? 0 : gravityFor(gravityNow);

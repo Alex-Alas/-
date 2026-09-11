@@ -7,8 +7,7 @@
    ========================================================= */
 import './render/three-config.js';
 import { app } from './core/app.js';
-import { events } from './core/events.js';
-import { renderer, view } from './render/renderer.js';
+import { renderer } from './render/renderer.js';
 import { scene } from './render/scene.js';
 import { camera, updateCamera, decayShake } from './camera/rig.js';
 import './camera/modes/orbit.js';
@@ -28,7 +27,7 @@ import { updateMagnetVisuals } from './entities/magnet.js';
 import './ui/input.js';
 import { updateIntent, setPlayMode } from './ui/controls.js';
 import { buildPanel } from './ui/panel.js';
-import { startCinematic, updateCinematic } from './show/cinematic.js';
+import { updateCinematic } from './show/cinematic.js';
 import { startSaver, updateSaver, IDLE_MS, idle } from './show/saver.js';
 import { pointer } from './ui/pointer.js';
 import { tickInspect } from './dev/inspect.js';

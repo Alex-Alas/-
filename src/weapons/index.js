@@ -12,7 +12,6 @@
    ========================================================= */
 import { Registry } from '../core/registry.js';
 import { events } from '../core/events.js';
-import { app } from '../core/app.js';
 import { KeyActions, inPlay } from '../ui/controls.js';
 import { beamFrameStart } from './aim.js';
 

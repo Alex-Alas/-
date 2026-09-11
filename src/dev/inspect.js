@@ -14,6 +14,8 @@ import { camera, camState, rig } from '../camera/rig.js';
 import { buddy, particles } from '../entities/buddy/index.js';
 import { player, respawnPlayer } from '../entities/player.js';
 import { setPlayMode, KeyActions, keys } from '../ui/controls.js';
+import { startCinematic, endCinematic, CINEMATIC } from '../show/cinematic.js';
+import { startSaver, exitSaver, SAVER_SCENES } from '../show/saver.js';
 
 let frames = 0, fpsWindow = performance.now(), fps = 0;
 
@@ -30,6 +32,7 @@ export function tickInspect() {
 window.__sandbox = {
   bodies, contacts, particles, FL, sim, app, camera, camState, rig, buddy, solverConfig,
   Props, spawnProp, raycast, player, respawnPlayer, setPlayMode, KeyActions, keys,
+  startCinematic, endCinematic, startSaver, exitSaver, CINEMATIC, SAVER_SCENES,
 
   /** Advance the physics without waiting for frames — fps-independent tests. */
   advance,
