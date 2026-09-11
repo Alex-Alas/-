@@ -29,6 +29,7 @@ import { updateMagnetVisuals } from './entities/magnet.js';
 import { Tools, equipTool, updateTools } from './weapons/index.js';
 import './weapons/physgun.js';
 import './weapons/gravgun.js';
+import './weapons/forcegun.js';
 import { updateExplosions } from './weapons/explosion.js';
 
 import './ui/input.js';
