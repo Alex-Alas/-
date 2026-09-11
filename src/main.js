@@ -30,6 +30,11 @@ import { Tools, equipTool, updateTools } from './weapons/index.js';
 import './weapons/physgun.js';
 import './weapons/gravgun.js';
 import './weapons/forcegun.js';
+import './weapons/rocket.js';
+import { updateRockets } from './weapons/rocket.js';
+import './weapons/bomb.js';
+import { updateBombs } from './weapons/bomb.js';
+import { updateExplosives } from './entities/explosive.js';
 import { updateExplosions } from './weapons/explosion.js';
 
 import './ui/input.js';
@@ -63,6 +68,8 @@ function loop(now) {
   updateFinger(dt);
   updateIntent();
   updateTools(dt);
+  updateRockets(dt);
+  updateBombs(dt);
   updateExplosions(dt);
   updateCrosshair();
 
@@ -75,6 +82,7 @@ function loop(now) {
   }
   if (steps === MAX_STEPS) accumulator = 0;
 
+  updateExplosives(dt);
   syncBodyMeshes();
   syncJointMeshes();
   updateShards(Math.min(dt, 0.05));
