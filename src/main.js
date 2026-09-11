@@ -16,6 +16,7 @@ import './camera/modes/first.js';
 import './camera/modes/third.js';
 
 import { syncBodyMeshes } from './physics/world.js';
+import { syncJointMeshes } from './physics/joints.js';
 import { stepWorld, FIXED_DT } from './physics/step.js';
 import './entities/level.js';
 import './entities/props.js';
@@ -24,6 +25,10 @@ import { updateShards } from './physics/debris.js';
 import { fluidRender, updateFinger } from './physics/fluid.js';
 import { syncAll, setMaterial, resetCreature } from './entities/buddy/index.js';
 import { updateMagnetVisuals } from './entities/magnet.js';
+
+import { Tools, equipTool, updateTools } from './weapons/index.js';
+import './weapons/physgun.js';
+import { updateExplosions } from './weapons/explosion.js';
 
 import './ui/input.js';
 import { updateIntent, setPlayMode } from './ui/controls.js';
@@ -53,6 +58,8 @@ function loop(now) {
   updateSaver(dt);
   updateFinger(dt);
   updateIntent();
+  updateTools(dt);
+  updateExplosions(dt);
 
   accumulator += dt;
   let steps = 0;
@@ -64,6 +71,7 @@ function loop(now) {
   if (steps === MAX_STEPS) accumulator = 0;
 
   syncBodyMeshes();
+  syncJointMeshes();
   updateShards(Math.min(dt, 0.05));
   fluidRender();
   decayShake(dt);
@@ -84,6 +92,10 @@ buildPanel();
 setMaterial('plush');
 resetCreature(0.35);
 syncAll();
+
+/* Slot 1 is the physics gun: the sandbox opens with a tool in hand. */
+const startingTool = Tools.find(t => t.slot === 1);
+if (startingTool) equipTool(startingTool.id);
 
 /* Straight into the sandbox. The reel is still there on P. */
 respawnPlayer();
