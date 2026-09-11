@@ -78,6 +78,7 @@ Tools.register({
     extra: 'a punted crate leaves at 42 u/s',
   },
 
+  isHolding() { return !!held.body; },
   equip() { release(); },
   unequip() { release(); },
 

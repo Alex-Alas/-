@@ -47,7 +47,11 @@ export function updateTools(dt) {
    --------------------------------------------------------- */
 events.on('fire:primary', (down) => { if (inPlay()) belt.tool?.primary?.(down); });
 events.on('fire:secondary', (down) => { if (inPlay()) belt.tool?.secondary?.(down); });
-events.on('fire:scroll', (dir) => { if (inPlay()) belt.tool?.scroll?.(dir); });
+events.on('fire:scroll', (dir) => {
+  if (!inPlay()) return;
+  const consumed = belt.tool?.scroll?.(dir);
+  if (!consumed) cycleTool(dir);
+});
 events.on('fire:middle', () => { if (inPlay()) belt.tool?.middle?.(); });
 
 /* number keys pick a slot; R is the tool's reload/reset */

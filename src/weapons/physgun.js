@@ -94,9 +94,12 @@ Tools.register({
     if (hit && hit.body) setFrozen(hit.body, true);
   },
 
+  isHolding() { return !!held.body; },
+
   scroll(dir) {
-    if (!held.body) return;
+    if (!held.body) return false;
     held.dist = Math.min(FAR, Math.max(NEAR, held.dist + dir * WHEEL_STEP));
+    return true;
   },
 
   reload() {
