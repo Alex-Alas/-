@@ -15,6 +15,7 @@ import { FL } from '../physics/fluid.js';
 import { P, setMaterial, resetCreature, applyImpulse, spinImpulse } from '../entities/buddy/index.js';
 import { syncPanel } from '../ui/panel.js';
 import { setPlayMode } from '../ui/controls.js';
+import { endCinematic } from './cinematic.js';
 
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 
@@ -203,7 +204,9 @@ let resumePlay = false;
 
 export function startSaver() {
   if (app.saver) return;
-  if (cin.active) endCinematic();
+  /* Only one director at a time. endCinematic() no-ops when the reel is
+     already down, so the flag does not need testing here. */
+  endCinematic();
 
   resumePlay = app.play;
   if (app.play) setPlayMode(false);
