@@ -35,7 +35,7 @@ CameraModes.register({
     playerEye(_pivot);
     _pivot.y += LIFT;
     playerForward(_fwd);
-    _right.set(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
+    _right.set(-Math.cos(player.yaw), 0, Math.sin(player.yaw));
 
     _want.copy(_pivot).addScaledVector(_fwd, -DIST).addScaledVector(_right, SHOULDER);
 

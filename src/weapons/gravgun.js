@@ -15,6 +15,7 @@ import { aimRay, aimHit, showBeam } from './aim.js';
 import { toLocal, fromLocal, springTo } from './grip.js';
 import { bodiesNear } from '../physics/world.js';
 import { playerEye } from '../entities/player.js';
+import { blastBuddy } from '../entities/buddy/index.js';
 
 const COLOUR = 0xffc93c;
 const REACH = 16;           // u — a yank, not a leash: it will not cross the map
@@ -52,6 +53,7 @@ function release() {
 /** Short shove for an empty-handed click: a cone of props is nudged away. */
 function shove(dir) {
   playerEye(_eye);
+  blastBuddy(_eye, 320, SHOVE_RADIUS);
   bodiesNear(_eye, SHOVE_RADIUS, near);
   for (const b of near) {
     if (b.immovable) continue;              // static and frozen alike

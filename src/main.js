@@ -14,11 +14,12 @@ import './camera/modes/orbit.js';
 import './camera/modes/first.js';
 import './camera/modes/third.js';
 
+import * as THREE from 'three';
 import { syncBodyMeshes } from './physics/world.js';
 import { syncJointMeshes } from './physics/joints.js';
 import { stepWorld, FIXED_DT } from './physics/step.js';
 import './entities/level.js';
-import './entities/props.js';
+import { spawnProp } from './entities/props.js';
 import { respawnPlayer } from './entities/player.js';
 import { updateShards } from './physics/debris.js';
 import { fluidRender, updateFinger } from './physics/fluid.js';
@@ -89,6 +90,27 @@ function loop(now) {
   renderer.render(scene, camera);
 }
 
+function initSandboxProps() {
+  const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+  // Props placed on platforms / furniture
+  spawnProp('crate', V3(4.4, 1.6, -2.6));
+  spawnProp('barrel', V3(-4.8, 1.6, 1.9));
+  spawnProp('boom', V3(1.7, 3.2, 4.4));
+  spawnProp('plank', V3(-12.0, 3.2, 6.0));
+  spawnProp('bigcrate', V3(12.0, 4.4, 9.0));
+  spawnProp('bowling', V3(12.0, 1.8, 5.2));
+  spawnProp('crate', V3(-11.0, 2.0, -9.0));
+  spawnProp('boom', V3(-11.0, 2.8, -12.2));
+  spawnProp('crate', V3(0.0, 5.0, -13.0));
+
+  // Props on the floor around the sandbox
+  spawnProp('crate', V3(2.5, 0.8, -3.5));
+  spawnProp('barrel', V3(-2.2, 0.9, -4.5));
+  spawnProp('boom', V3(3.5, 0.9, 1.5));
+  spawnProp('ball', V3(-1.5, 0.6, 3.5));
+  spawnProp('bowling', V3(2.0, 0.6, 4.5));
+}
+
 /* =========================================================
    BOOT
    ========================================================= */
@@ -97,6 +119,7 @@ initHUD();
 setMaterial('plush');
 resetCreature(0.35);
 syncAll();
+initSandboxProps();
 
 /* Slot 1 is the physics gun: the sandbox opens with a tool in hand. */
 const startingTool = Tools.find(t => t.slot === 1);

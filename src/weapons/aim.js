@@ -11,21 +11,62 @@ import { sphereMesh, boneMesh } from '../render/shapes.js';
 import { raycast } from '../physics/world.js';
 import { player, playerEye, playerForward, muzzle } from '../entities/player.js';
 
+import { camera } from '../camera/rig.js';
+import { particles } from '../entities/buddy/skeleton.js';
+
 export const aim = {
   origin: new THREE.Vector3(),
   dir: new THREE.Vector3(),
 };
 
 export function aimRay() {
-  playerEye(aim.origin);
-  playerForward(aim.dir);
+  if (camera) {
+    camera.getWorldPosition(aim.origin);
+    camera.getWorldDirection(aim.dir);
+  } else {
+    playerEye(aim.origin);
+    playerForward(aim.dir);
+  }
   return aim;
 }
 
+const _toP = new THREE.Vector3();
+
 /** Nearest thing under the crosshair. */
-export function aimHit(maxDist = 120, filter = null) {
+export function aimHit(maxDist = 120, filter = null, includeBuddy = true) {
   aimRay();
-  return raycast(aim.origin, aim.dir, maxDist, filter);
+  const hit = raycast(aim.origin, aim.dir, maxDist, filter);
+  let bestDist = hit ? hit.dist : maxDist;
+  let buddyHit = null;
+
+  if (includeBuddy && particles && particles.length) {
+    for (const p of particles) {
+      _toP.copy(p.pos).sub(aim.origin);
+      const tca = _toP.dot(aim.dir);
+      if (tca < 0) continue;
+      const d2 = _toP.lengthSq() - tca * tca;
+      const r = (p.radius || 0.3) * 1.5;
+      if (d2 > r * r) continue;
+      const thc = Math.sqrt(r * r - d2);
+      const t = tca - thc;
+      const d = t >= 0 ? t : tca + thc;
+      if (d > 0 && d < bestDist) {
+        bestDist = d;
+        const pt = new THREE.Vector3().copy(aim.origin).addScaledVector(aim.dir, d);
+        const norm = new THREE.Vector3().copy(pt).sub(p.pos).normalize();
+        buddyHit = {
+          body: null,
+          particle: p,
+          point: pt,
+          normal: norm,
+          dist: d,
+          isBuddy: true,
+        };
+      }
+    }
+  }
+
+  return buddyHit || hit;
 }
 
 /* ---------------------------------------------------------

@@ -21,8 +21,8 @@ export function updateCrosshair() {
   crosshairEl.classList.add('visible');
 
   const hit = aimHit(60);
-  const isGrabbable = hit && hit.body && !hit.body.isStatic && hit.body.type !== 'level';
-  const isFrozen = isGrabbable && hit.body.frozen;
+  const isGrabbable = hit && ((hit.body && !hit.body.isStatic && hit.body.type !== 'level') || hit.isBuddy);
+  const isFrozen = !!(hit && hit.body && hit.body.frozen);
 
   crosshairEl.classList.toggle('target', !!isGrabbable && !isFrozen);
   crosshairEl.classList.toggle('frozen', !!isFrozen);

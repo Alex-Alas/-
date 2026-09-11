@@ -309,7 +309,7 @@ export function stepPlayer(dt) {
   player.eyeHeight += (targetEye - player.eyeHeight) * Math.min(1, dt * 14);
 
   _fwd.set(Math.sin(player.yaw), 0, Math.cos(player.yaw));
-  _right.set(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
+  _right.set(-Math.cos(player.yaw), 0, Math.sin(player.yaw));
 
   _wish.set(0, 0, 0)
     .addScaledVector(_fwd, player.intent.forward)

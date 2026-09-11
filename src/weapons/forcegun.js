@@ -54,6 +54,14 @@ Tools.register({
     if (!hit) return;
     showBeam(hit.point, COLOUR);
 
+    if (hit.isBuddy && hit.particle) {
+      _dir.copy(aim.dir);
+      if (active.pull) _dir.negate();
+      const kick = (active.push ? 1 : -1) * 0.45 * Math.min(dt, 0.05) * 60;
+      hit.particle.prev.subScaledVector(_dir, kick);
+      return;
+    }
+
     const body = hit.body;
     if (!body || body.immovable) return;    // the ground and the level are not toys
 
