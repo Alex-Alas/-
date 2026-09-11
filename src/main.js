@@ -14,10 +14,12 @@ import { camera, updateCamera, decayShake } from './camera/rig.js';
 import './camera/modes/orbit.js';
 
 import { updateWind } from './physics/sim.js';
+import { stepRigid, syncBodyMeshes, pushBodySolids, collideParticleWithBodies } from './physics/world.js';
 import './entities/level.js';
+import './entities/props.js';
 import { updateShards } from './physics/debris.js';
 import { FL, fluidStep, fluidRender, clearSolids, updateFinger } from './physics/fluid.js';
-import { stepBuddy, syncAll, setMaterial, resetCreature, matDef, buddy } from './entities/buddy/index.js';
+import { stepBuddy, syncAll, setMaterial, resetCreature, matDef, buddy, particles } from './entities/buddy/index.js';
 import { updateMagnetVisuals } from './entities/magnet.js';
 
 import './ui/input.js';
@@ -25,6 +27,7 @@ import { buildPanel } from './ui/panel.js';
 import { startCinematic, updateCinematic } from './show/cinematic.js';
 import { startSaver, updateSaver, IDLE_MS, idle } from './show/saver.js';
 import { pointer } from './ui/pointer.js';
+import { tickInspect } from './dev/inspect.js';
 import { finger } from './physics/fluid.js';
 
 /* =========================================================
@@ -36,14 +39,29 @@ let accumulator = 0;
 let lastTime = performance.now();
 
 function stepWorld(dt) {
+  const M = matDef(buddy.material);
+
   updateWind(dt);
   clearSolids();          // obstacle list for the fluid, rebuilt by its owners
+
+  stepRigid(dt);
   stepBuddy(dt);
-  if (FL.n > 0) fluidStep(dt, matDef(buddy.material).gravityMul);
+
+  /* the ragdoll is pushed around by the props, and pushes back */
+  for (const p of particles) {
+    if (p.grabbed) continue;
+    collideParticleWithBodies(p, p.radius * M.radiusMul, p.invMass > 0 ? 1 / p.invMass : 1, dt);
+  }
+
+  if (FL.n > 0) {
+    pushBodySolids();
+    fluidStep(dt, M.gravityMul);
+  }
 }
 
 function loop(now) {
   requestAnimationFrame(loop);
+  tickInspect();
 
   let dt = (now - lastTime) / 1000;
   lastTime = now;
@@ -62,6 +80,7 @@ function loop(now) {
   }
   if (steps === MAX_STEPS) accumulator = 0;
 
+  syncBodyMeshes();
   updateShards(Math.min(dt, 0.05));
   fluidRender();
   decayShake(dt);
