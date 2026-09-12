@@ -5,21 +5,44 @@
    ========================================================= */
 import { app, interactive } from '../core/app.js';
 import { events } from '../core/events.js';
-import { Tools, belt } from '../weapons/index.js';
+import { Tools, belt, equipTool } from '../weapons/index.js';
 import { pointer } from './pointer.js';
+import { createHUDState } from './hud-state.js';
 
 const hudEl = document.getElementById('hud');
 const hudSlotsEl = document.getElementById('hudSlots');
 const hudHintsEl = document.getElementById('hudHints');
 const promptEl = document.getElementById('unlockedPrompt');
 
+export const hudState = createHUDState({
+  onChange: (expanded) => {
+    if (hudEl) {
+      hudEl.classList.toggle('expanded', expanded);
+      hudEl.classList.toggle('collapsed', !expanded);
+    }
+  }
+});
+
 export function initHUD() {
+  if (hudEl) {
+    hudEl.classList.add('collapsed');
+    hudEl.classList.remove('expanded');
+
+    hudEl.addEventListener('mouseenter', () => {
+      if (!pointer.locked) hudState.setHovered(true);
+    });
+    hudEl.addEventListener('mouseleave', () => {
+      hudState.setHovered(false);
+    });
+  }
+
   renderSlots();
   updateHUDVisibility();
 
   events.on('tool:equipped', () => {
     renderSlots();
     updateHUDVisibility();
+    hudState.expand(2000);
   });
   events.on('play:mode', updateHUDVisibility);
   events.on('pointer:lock', updateHUDVisibility);
@@ -38,6 +61,10 @@ export function renderSlots() {
     const colorHex = '#' + (t.colour !== undefined ? t.colour.toString(16).padStart(6, '0') : 'ffffff');
     const shortName = t.name.replace(' GUN', '');
     slotEl.innerHTML = `<i style="background:${colorHex}"></i>[${t.slot}] ${shortName}`;
+    slotEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      equipTool(t.id);
+    });
     hudSlotsEl.appendChild(slotEl);
   }
 
@@ -54,5 +81,8 @@ export function updateHUDVisibility() {
   }
   if (promptEl) {
     promptEl.classList.toggle('visible', isPlaying && !pointer.locked);
+  }
+  if (!isPlaying) {
+    hudState.collapse();
   }
 }

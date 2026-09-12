@@ -187,26 +187,28 @@
     position: fixed;
     left: 18px; bottom: 18px;
     z-index: 22;
-    display: flex; flex-direction: column; gap: 6px;
+    display: flex; flex-direction: column; gap: 4px;
     font-family: ui-monospace, "Courier New", monospace;
-    pointer-events: none;
+    pointer-events: auto;
     transition: opacity 0.25s ease, transform 0.25s ease;
   }
-  #hud.hidden { opacity: 0; transform: translateY(12px); }
+  #hud.hidden { opacity: 0; transform: translateY(12px); pointer-events: none; }
 
   .hud-panel {
-    background: #120e24;
-    border: 2px solid #4d3f7a;
+    background: rgba(18, 14, 36, 0.92);
+    border: 1px solid #4d3f7a;
     box-shadow: 2px 2px 0 #000;
-    padding: 6px 10px;
+    padding: 4px 6px;
     color: #e7dcff;
     letter-spacing: 1.5px;
     font-size: 10px;
     text-transform: uppercase;
+    transition: border-color 0.2s ease, background 0.2s ease;
   }
 
   .hud-slots {
-    display: flex; gap: 6px;
+    display: flex; gap: 4px; align-items: center;
+    transition: gap 0.2s ease;
   }
 
   .hud-slot {
@@ -215,7 +217,24 @@
     border: 1px solid #3d3262;
     color: #8c7fb8;
     box-shadow: 1px 1px 0 #000;
-    transition: all 0.08s ease;
+    white-space: nowrap;
+    cursor: pointer;
+    overflow: hidden;
+    max-width: 140px;
+    opacity: 1;
+    transform: scale(1);
+    transition: max-width 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+                opacity 0.18s ease,
+                padding 0.18s ease,
+                margin 0.18s ease,
+                transform 0.18s ease,
+                background 0.1s ease,
+                border-color 0.1s ease;
+  }
+  .hud-slot:hover {
+    background: #2a2148;
+    color: #ffffff;
+    border-color: #8c7fb8;
   }
   .hud-slot.active {
     background: #392e62;
@@ -228,10 +247,41 @@
     margin-right: 5px; vertical-align: middle;
   }
 
+  /* Collapsed (minimal resting state): hide inactive slots and hints */
+  #hud.collapsed .hud-slot:not(.active) {
+    max-width: 0;
+    opacity: 0;
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0;
+    border: 0;
+    pointer-events: none;
+    transform: scaleX(0.7);
+  }
+  #hud.collapsed .hud-slots {
+    gap: 0;
+  }
+  #hud.collapsed .hud-hints {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0;
+    border: 0;
+    pointer-events: none;
+  }
+
   .hud-hints {
     font-size: 8px;
     color: #9f91cf;
     line-height: 1.4;
+    overflow: hidden;
+    max-height: 32px;
+    transition: max-height 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+                opacity 0.2s ease,
+                padding 0.2s ease,
+                margin 0.2s ease,
+                border 0.2s ease;
   }
   .hud-hints b { color: #fff; }
 
